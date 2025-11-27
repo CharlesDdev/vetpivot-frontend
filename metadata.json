@@ -1,0 +1,5 @@
+{
+  "name": "VetPivot - Resume Optimizer",
+  "description": "An application that translates military jargon, performance bullets, and award narratives into three distinct, civilian-friendly formats: a professional resume bullet, a casual explanation, and an ATS-optimized version.",
+  "requestFramePermissions": []
+}
