@@ -1,20 +1,34 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# VetPivot Resume Optimizer — Frontend (React + Vite)
 
-# Run and deploy your AI Studio app
+Part of the VetPivot Resume Optimizer: a tool that translates military bullets into clear, civilian-ready resume lines.
 
-This contains everything you need to run your app locally.
+## 🖥️ Tech Stack
+- React (Vite)
+- Firebase Hosting
+- TailwindCSS (optional)
+- FastAPI backend (Google Cloud Run)
+- Gemini API (Google AI Studio)
 
-View your app in AI Studio: https://ai.studio/apps/drive/1Os-Px6_WZ7tw5MuIfmdXZ1o1n-e70Mmn
+## 🚀 Commands
+```bash
+npm install
+npm run dev
+npm run build
+```
 
-## Run Locally
+## 🔌 API Connection
+Environment variable:  
+VITE_API_URL=https://vetpivot-backend-796137818435.us-central1.run.app
 
-**Prerequisites:**  Node.js
+## 🎯 Purpose
+This frontend delivers a simple, fast UI for:
+- entering bullets
+- receiving clean translations
+- previewing resume-ready text
 
+## 🔗 Related Repos
+Backend API → https://github.com/CharlesDdev/vetpivot-backend
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## 📬 Contact
+X: @VetPivot  
+GitHub: CharlesDdev
