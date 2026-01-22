@@ -4,6 +4,7 @@ import InputForm from './components/InputForm';
 import TranslationOutput from './components/TranslationOutput';
 import Spinner from './components/Spinner';
 import Footer from './components/Footer';
+import MOSLookupCard from './components/MOSLookupCard';
 import VetPivotLogo from './components/VetPivotLogo';
 import type { TranslationResult } from './types';
 import { getTranslationFromBackend } from './services/backendService';
@@ -89,6 +90,10 @@ const App: React.FC = () => {
               />
             )}
           </div>
+
+          <section className="mt-12">
+            <MOSLookupCard />
+          </section>
         </main>
       </div>
     </div>
