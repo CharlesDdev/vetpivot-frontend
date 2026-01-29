@@ -56,7 +56,11 @@ const App: React.FC = () => {
               </p>
             </div>
           </section>
-
+          <section className="mt-12">
+  <div className="w-full max-w-4xl mx-auto">
+    <div className="embed-onet-ip min-h-[520px] rounded-2xl bg-white shadow-lg" />
+  </div>
+</section>
           <Footer />
 
           <section className="mt-12">
