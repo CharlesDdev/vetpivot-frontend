@@ -35,6 +35,7 @@ export default function MOSLookupCard() {
 
   return (
     <div className="bg-slate-900/40 rounded-2xl border border-slate-700 p-6 shadow-xl">
+      <p className="text-xs uppercase tracking-widest text-gold-300/80 mb-2">Step 1 (Optional): Explore roles & keywords</p>
       <h2 className="text-2xl font-semibold text-white mb-2">Live O*NET Lookup</h2>
       <p className="text-sm text-slate-300 mb-4">
         Enter a MOS keyword to fetch results directly from O*NET Online.

@@ -57,12 +57,8 @@ const App: React.FC = () => {
             </div>
           </section>
           <section className="mt-12">
-  <div className="w-full max-w-4xl mx-auto">
-    <div className="embed-onet-ip min-h-[520px] rounded-2xl bg-white shadow-lg" />
-  </div>
-</section>
-          <Footer />
-
+            <MOSLookupCard />
+          </section>
           <section className="mt-12">
             <InputForm
               inputText={inputText}
@@ -71,7 +67,6 @@ const App: React.FC = () => {
               isLoading={isLoading}
             />
           </section>
-
           <div className="mt-12">
             {isLoading && (
               <div className="flex justify-center items-center h-40">
@@ -96,8 +91,12 @@ const App: React.FC = () => {
           </div>
 
           <section className="mt-12">
-            <MOSLookupCard />
+            <div className="w-full max-w-4xl mx-auto">
+              <div className="embed-onet-ip" />
+            </div>
           </section>
+
+          <Footer />
         </main>
       </div>
     </div>

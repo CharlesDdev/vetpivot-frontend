@@ -32,6 +32,7 @@ const InputForm: React.FC<InputFormProps> = ({ inputText, setInputText, onTransl
     <div className="bg-white/5 backdrop-blur-sm border border-white/10 p-6 sm:p-8 rounded-2xl shadow-xl relative overflow-hidden group">
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-gold-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
 
+      <p className="text-xs uppercase tracking-widest text-gold-400/80 mb-3">Step 2: Paste your military text</p>
       <div className="flex items-center gap-3 mb-6">
         <div className="p-2 bg-gold-500/10 rounded-lg text-gold-400">
           <EditIcon />
