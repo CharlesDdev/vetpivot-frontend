@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Header from './components/Header';
 import InputForm from './components/InputForm';
 import TranslationOutput from './components/TranslationOutput';
@@ -15,6 +15,13 @@ const App: React.FC = () => {
   const [translations, setTranslations] = useState<TranslationResult | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const outputRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (translations) {
+      outputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [translations]);
 
   const handleTranslate = async () => {
     if (!inputText.trim()) {
@@ -57,9 +64,6 @@ const App: React.FC = () => {
             </div>
           </section>
           <section className="mt-12">
-            <MOSLookupCard />
-          </section>
-          <section className="mt-12">
             <InputForm
               inputText={inputText}
               setInputText={setInputText}
@@ -67,7 +71,10 @@ const App: React.FC = () => {
               isLoading={isLoading}
             />
           </section>
-          <div className="mt-12">
+          <section className="mt-10">
+            <MOSLookupCard />
+          </section>
+          <div className="mt-12" ref={outputRef} id="outputs-section">
             {isLoading && (
               <div className="flex justify-center items-center h-40">
                 <Spinner />
@@ -82,11 +89,16 @@ const App: React.FC = () => {
             )}
 
             {translations && !isLoading && (
-              <TranslationOutput
-                translations={translations}
-                onRegenerate={handleTranslate}
-                isLoading={isLoading}
-              />
+              <div className="space-y-4">
+                <div className="rounded-lg border border-emerald-500/40 bg-emerald-900/20 px-4 py-3 text-emerald-100">
+                  Generated 3 versions: Professional, Casual, ATS.
+                </div>
+                <TranslationOutput
+                  translations={translations}
+                  onRegenerate={handleTranslate}
+                  isLoading={isLoading}
+                />
+              </div>
             )}
           </div>
 

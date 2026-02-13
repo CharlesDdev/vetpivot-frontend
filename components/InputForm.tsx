@@ -82,7 +82,7 @@ const InputForm: React.FC<InputFormProps> = ({ inputText, setInputText, onTransl
             </span>
           ) : (
             <>
-              <span>Get Civilian Resume Bullet</span>
+              <span>Translate Military Text</span>
               <ArrowRightIcon />
             </>
           )}

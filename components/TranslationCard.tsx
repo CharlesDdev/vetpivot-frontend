@@ -3,6 +3,7 @@ import React, { useState, useCallback } from 'react';
 interface TranslationCardProps {
   title: string;
   content: string;
+  copyLabel: string;
 }
 
 const CopyIcon: React.FC<{className: string}> = ({ className }) => (
@@ -18,7 +19,7 @@ const CheckIcon: React.FC<{className: string}> = ({ className }) => (
 );
 
 
-const TranslationCard: React.FC<TranslationCardProps> = ({ title, content }) => {
+const TranslationCard: React.FC<TranslationCardProps> = ({ title, content, copyLabel }) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = useCallback(() => {
@@ -35,10 +36,12 @@ const TranslationCard: React.FC<TranslationCardProps> = ({ title, content }) => 
         <button
           onClick={handleCopy}
           className={`px-3 py-1.5 text-sm rounded-md flex items-center gap-2 transition-colors duration-200 ${copied ? 'bg-green-600 text-white' : 'bg-dark-olive hover:bg-opacity-80 text-light-tan/90'}`}
-          aria-label={`Copy ${title}`}
+          aria-label={copyLabel}
+          title={copyLabel}
         >
           {copied ? <CheckIcon className="w-4 h-4" /> : <CopyIcon className="w-4 h-4" />}
-          {copied ? 'Copied!' : 'Copy'}
+          <span>{copyLabel}</span>
+          {copied && <span className="text-xs">(Copied!)</span>}
         </button>
       </div>
       <div className="p-4">

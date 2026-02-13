@@ -29,9 +29,21 @@ const TranslationOutput: React.FC<TranslationOutputProps> = ({ translations, onR
       </div>
 
       <div className="grid grid-cols-1 gap-6">
-        <TranslationCard title="Professional Resume Bullet" content={translations.professional} />
-        <TranslationCard title="Casual Explanation" content={translations.casual} />
-        <TranslationCard title="ATS-Optimized Version" content={translations.ats} />
+        <TranslationCard
+          title="Professional Resume Bullet"
+          content={translations.professional}
+          copyLabel="Copy professional bullet"
+        />
+        <TranslationCard
+          title="Casual Explanation"
+          content={translations.casual}
+          copyLabel="Copy casual explanation"
+        />
+        <TranslationCard
+          title="ATS-Optimized Version"
+          content={translations.ats}
+          copyLabel="Copy ATS version"
+        />
       </div>
     </div>
   );
