@@ -6,13 +6,23 @@ import {
   searchMilitaryCrosswalk,
 } from '../services/onetService';
 
-export default function MOSLookupCard() {
+interface MOSLookupCardProps {
+  initiallyExpanded?: boolean;
+  onOccupationSelect?: (occupation: MilitaryCrosswalkOccupation) => void;
+  selectedOccupationCode?: string | null;
+}
+
+export default function MOSLookupCard({
+  initiallyExpanded = false,
+  onOccupationSelect,
+  selectedOccupationCode: selectedOccupationCodeProp = null,
+}: MOSLookupCardProps) {
   const [keyword, setKeyword] = useState('');
   const [occupations, setOccupations] = useState<MilitaryCrosswalkOccupation[]>([]);
   const [skills, setSkills] = useState<OccupationSkill[]>([]);
-  const [selectedOccupationCode, setSelectedOccupationCode] = useState<string | null>(null);
+  const [internalSelectedOccupationCode, setInternalSelectedOccupationCode] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(initiallyExpanded);
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [isSkillsLoading, setIsSkillsLoading] = useState(false);
@@ -26,12 +36,12 @@ export default function MOSLookupCard() {
     try {
       const data = await searchMilitaryCrosswalk(target);
       setOccupations(data.occupations ?? []);
-      setSelectedOccupationCode(null);
+      setInternalSelectedOccupationCode(null);
       setSkills([]);
       setSkillsError(null);
     } catch (err) {
       setOccupations([]);
-      setSelectedOccupationCode(null);
+      setInternalSelectedOccupationCode(null);
       setSkills([]);
       setSearchError(err instanceof Error ? err.message : 'Failed to load O*NET occupations.');
     } finally {
@@ -39,8 +49,11 @@ export default function MOSLookupCard() {
     }
   };
 
-  const loadSkills = async (code: string) => {
-    setSelectedOccupationCode(code);
+  const loadSkills = async (code: string, occupation?: MilitaryCrosswalkOccupation) => {
+    setInternalSelectedOccupationCode(code);
+    if (occupation && onOccupationSelect) {
+      onOccupationSelect(occupation);
+    }
     setIsSkillsLoading(true);
     setSkillsError(null);
 
@@ -123,9 +136,9 @@ export default function MOSLookupCard() {
                     <li key={occupation.code}>
                       <button
                         type="button"
-                        onClick={() => loadSkills(occupation.code)}
+                        onClick={() => loadSkills(occupation.code, occupation)}
                         className={`w-full text-left rounded-md border px-3 py-2 transition ${
-                          selectedOccupationCode === occupation.code
+                          (selectedOccupationCodeProp ?? internalSelectedOccupationCode) === occupation.code
                             ? 'border-gold-400 bg-slate-800/90'
                             : 'border-slate-700 bg-slate-900/70 hover:border-slate-500'
                         }`}
@@ -149,9 +162,9 @@ export default function MOSLookupCard() {
               <p className="text-slate-300">No occupations found for this keyword.</p>
             )}
 
-            {selectedOccupationCode && (
+            {(selectedOccupationCodeProp ?? internalSelectedOccupationCode) && (
               <div className="rounded-lg border border-slate-700 bg-slate-950/60 p-3">
-                <h3 className="text-sm font-semibold text-slate-100 mb-2">Top Skills ({selectedOccupationCode})</h3>
+                <h3 className="text-sm font-semibold text-slate-100 mb-2">Top Skills ({selectedOccupationCodeProp ?? internalSelectedOccupationCode})</h3>
                 {isSkillsLoading && <p aria-live="polite">Loading skills...</p>}
                 {skillsError && (
                   <div className="rounded-md border border-red-500 bg-red-900/40 p-3 text-red-100" role="alert">

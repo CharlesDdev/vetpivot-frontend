@@ -4,8 +4,8 @@ import InputForm from './components/InputForm';
 import TranslationOutput from './components/TranslationOutput';
 import Spinner from './components/Spinner';
 import Footer from './components/Footer';
-import MOSLookupCard from './components/MOSLookupCard';
 import VetPivotLogo from './components/VetPivotLogo';
+import CareerFlow from './components/CareerFlow';
 import type { TranslationResult } from './types';
 import { getTranslationFromBackend } from './services/backendService';
 
@@ -64,15 +64,15 @@ const App: React.FC = () => {
             </div>
           </section>
           <section className="mt-12">
+            <CareerFlow />
+          </section>
+          <section className="mt-12">
             <InputForm
               inputText={inputText}
               setInputText={setInputText}
               onTranslate={handleTranslate}
               isLoading={isLoading}
             />
-          </section>
-          <section className="mt-10">
-            <MOSLookupCard />
           </section>
           <div className="mt-12" ref={outputRef} id="outputs-section">
             {isLoading && (

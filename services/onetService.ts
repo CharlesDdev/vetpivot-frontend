@@ -37,6 +37,19 @@ export interface OccupationSkillsResponse {
   skills: OccupationSkill[];
 }
 
+export interface OccupationSearchOccupation {
+  code: string;
+  title: string;
+}
+
+export interface OccupationSearchResponse {
+  keyword: string;
+  start: number;
+  end: number;
+  total: number;
+  occupations: OccupationSearchOccupation[];
+}
+
 const parseErrorMessage = async (response: Response): Promise<string> => {
   const fallback = `HTTP ${response.status}`;
 
@@ -111,4 +124,24 @@ export const getOccupationSkills = async (
   const safeCode = encodeURIComponent(code);
   const url = `${API_BASE_URL}/api/onet/occupations/${safeCode}/skills?${params.toString()}`;
   return fetchJson<OccupationSkillsResponse>(url);
+};
+
+
+export const searchOccupations = async (
+  keyword: string,
+  start = 1,
+  end = 20
+): Promise<OccupationSearchResponse> => {
+  const safeKeyword = keyword.trim();
+  if (!safeKeyword) {
+    throw new Error('Keyword is required to search occupations.');
+  }
+
+  const params = new URLSearchParams({
+    keyword: safeKeyword,
+    start: String(start),
+    end: String(end),
+  });
+  const url = `${API_BASE_URL}/api/onet/occupations/search?${params.toString()}`;
+  return fetchJson<OccupationSearchResponse>(url);
 };
