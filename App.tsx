@@ -2,10 +2,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import Header from './components/Header';
 import InputForm from './components/InputForm';
 import TranslationOutput from './components/TranslationOutput';
-import Spinner from './components/Spinner';
+import MOSLookupCard from './components/MOSLookupCard';
 import Footer from './components/Footer';
 import VetPivotLogo from './components/VetPivotLogo';
-import CareerFlow from './components/CareerFlow';
 import type { TranslationResult } from './types';
 import { getTranslationFromBackend } from './services/backendService';
 
@@ -14,7 +13,9 @@ const App: React.FC = () => {
   const [inputText, setInputText] = useState<string>('');
   const [translations, setTranslations] = useState<TranslationResult | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  const [inputError, setInputError] = useState<string | null>(null);
+  const [apiError, setApiError] = useState<string | null>(null);
+  const [hasSubmitted, setHasSubmitted] = useState<boolean>(false);
   const outputRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -24,12 +25,15 @@ const App: React.FC = () => {
   }, [translations]);
 
   const handleTranslate = async () => {
+    setHasSubmitted(true);
     if (!inputText.trim()) {
-      setError('Please enter some text to translate.');
+      setInputError('Please paste at least one bullet or achievement.');
+      setTranslations(null);
       return;
     }
+    setInputError(null);
     setIsLoading(true);
-    setError(null);
+    setApiError(null);
     setTranslations(null);
 
     try {
@@ -37,7 +41,7 @@ const App: React.FC = () => {
       setTranslations(result);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to get translations. Please try again.';
-      setError(errorMessage);
+      setApiError(errorMessage);
       console.error(err);
     } finally {
       setIsLoading(false);
@@ -45,26 +49,23 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center p-4 sm:p-6 lg:p-8 font-sans bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-fixed">
+    <div className="min-h-screen flex flex-col items-center p-4 sm:p-6 lg:p-8 font-sans bg-slate-950">
       <div className="w-full max-w-4xl mx-auto bg-dark-charcoal/30 backdrop-blur-md border border-white/10 rounded-3xl p-8 shadow-2xl">
         <Header />
-        <main className="mt-8 sm:mt-12">
-          <section className="flex flex-col items-center gap-6 text-center">
-            <VetPivotLogo wrapperClassName="w-48 h-48 p-6 bg-white/5 rounded-full backdrop-blur-sm border border-white/10 shadow-inner" iconClassName="w-24" textClassName="text-2xl mt-2 font-serif tracking-wider" />
+        <main className="mt-6 sm:mt-8">
+          <section className="flex flex-col items-center gap-4 text-center">
+            <VetPivotLogo wrapperClassName="w-32 h-32 p-4 bg-white/5 rounded-full backdrop-blur-sm border border-white/10 shadow-inner" iconClassName="w-16" textClassName="text-xl mt-1 font-serif tracking-wider" />
             <div>
-              <h1 className="text-4xl sm:text-6xl font-bold text-light-tan tracking-tight font-serif">
-                VETPIVOT
+              <h1 className="text-3xl sm:text-4xl font-bold text-light-tan tracking-tight font-serif">
+                Translate military experience into civilian-ready resume bullets
               </h1>
-              <p className="mt-2 text-xl text-gold-400 font-medium tracking-widest uppercase text-xs">
-                Resume Optimizer
+              <p className="mt-3 text-base text-light-tan/80 max-w-2xl mx-auto leading-relaxed">
+                Paste your bullets, evaluation lines, or duty descriptions. Get clear versions you can copy in seconds.
               </p>
-              <p className="mt-6 text-lg text-light-tan/80 max-w-2xl mx-auto leading-relaxed">
-                Translate your military service into civilian language that recruiters understand.
+              <p className="mt-3 text-sm text-light-tan/60">
+                Your text is processed securely and never stored.
               </p>
             </div>
-          </section>
-          <section className="mt-12">
-            <CareerFlow />
           </section>
           <section className="mt-12">
             <InputForm
@@ -72,40 +73,33 @@ const App: React.FC = () => {
               setInputText={setInputText}
               onTranslate={handleTranslate}
               isLoading={isLoading}
+              error={inputError}
             />
           </section>
           <div className="mt-12" ref={outputRef} id="outputs-section">
-            {isLoading && (
-              <div className="flex justify-center items-center h-40">
-                <Spinner />
-              </div>
-            )}
-
-            {error && (
-              <div className="bg-red-900/50 border border-red-700 text-red-300 px-4 py-3 rounded-lg text-center backdrop-blur-sm" role="alert">
-                <strong className="font-bold">Error: </strong>
-                <span className="block sm:inline">{error}</span>
-              </div>
-            )}
-
-            {translations && !isLoading && (
-              <div className="space-y-4">
-                <div className="rounded-lg border border-emerald-500/40 bg-emerald-900/20 px-4 py-3 text-emerald-100">
-                  Generated 3 versions: Professional, Casual, ATS.
-                </div>
-                <TranslationOutput
-                  translations={translations}
-                  onRegenerate={handleTranslate}
-                  isLoading={isLoading}
-                />
-              </div>
-            )}
+            <TranslationOutput
+              translations={translations}
+              onRegenerate={handleTranslate}
+              isLoading={isLoading}
+              hasSubmitted={hasSubmitted}
+              error={apiError}
+            />
           </div>
 
-          <section className="mt-12">
-            <div className="w-full max-w-4xl mx-auto">
-              <div className="embed-onet-ip" />
-            </div>
+          <section className="mt-12 rounded-2xl border border-white/10 bg-black/20 p-5">
+            <details className="group">
+              <summary className="cursor-pointer list-none flex items-center justify-between text-left">
+                <div>
+                  <p className="text-xs uppercase tracking-widest text-gold-400/80">Step 3 (Optional)</p>
+                  <h2 className="text-xl font-semibold text-light-tan mt-1">Target a role (MOS/O*NET crosswalk)</h2>
+                  <p className="text-sm text-light-tan/60 mt-1">Generate a targeted version after you review your Step 2 results.</p>
+                </div>
+                <span className="text-light-tan/60 text-sm group-open:rotate-180 transition-transform">⌄</span>
+              </summary>
+              <div className="mt-4">
+                <MOSLookupCard initiallyExpanded />
+              </div>
+            </details>
           </section>
 
           <Footer />

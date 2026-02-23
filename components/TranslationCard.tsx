@@ -30,22 +30,21 @@ const TranslationCard: React.FC<TranslationCardProps> = ({ title, content, copyL
   }, [content]);
 
   return (
-    <div className="bg-dark-charcoal/50 border border-white/10 rounded-lg shadow-lg overflow-hidden">
-      <div className="p-4 flex justify-between items-center bg-dark-charcoal/80 border-b border-white/10">
+    <div className="bg-dark-charcoal/50 border border-white/10 rounded-xl shadow-lg overflow-hidden">
+      <div className="px-4 py-3 flex justify-between items-center gap-3 bg-dark-charcoal/60 border-b border-white/10">
         <h3 className="text-lg font-bold text-light-tan">{title}</h3>
         <button
           onClick={handleCopy}
-          className={`px-3 py-1.5 text-sm rounded-md flex items-center gap-2 transition-colors duration-200 ${copied ? 'bg-green-600 text-white' : 'bg-dark-olive hover:bg-opacity-80 text-light-tan/90'}`}
+          className={`px-3 py-1.5 text-sm rounded-md flex items-center gap-2 transition-colors duration-200 whitespace-nowrap ${copied ? 'bg-green-600 text-white' : 'bg-dark-olive hover:bg-opacity-80 text-light-tan/90'}`}
           aria-label={copyLabel}
           title={copyLabel}
         >
           {copied ? <CheckIcon className="w-4 h-4" /> : <CopyIcon className="w-4 h-4" />}
-          <span>{copyLabel}</span>
-          {copied && <span className="text-xs">(Copied!)</span>}
+          <span>{copied ? 'Copied' : copyLabel}</span>
         </button>
       </div>
-      <div className="p-4">
-        <p className="text-light-tan/90 whitespace-pre-wrap">{content}</p>
+      <div className="px-4 py-4">
+        <p className="text-sm sm:text-base text-light-tan/90 whitespace-pre-wrap">{content}</p>
       </div>
     </div>
   );

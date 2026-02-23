@@ -23,26 +23,27 @@ interface InputFormProps {
   setInputText: (text: string) => void;
   onTranslate: () => void;
   isLoading: boolean;
+  error?: string | null;
 }
 
-const InputForm: React.FC<InputFormProps> = ({ inputText, setInputText, onTranslate, isLoading }) => {
+const InputForm: React.FC<InputFormProps> = ({ inputText, setInputText, onTranslate, isLoading, error }) => {
   const placeholderText = `Paste your military text here. For example: 'Led a team of 12 soldiers during deployment operations responsible for maintaining equipment worth $2.3M...'`;
 
   return (
     <div className="bg-white/5 backdrop-blur-sm border border-white/10 p-6 sm:p-8 rounded-2xl shadow-xl relative overflow-hidden group">
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-gold-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
 
-      <p className="text-xs uppercase tracking-widest text-gold-400/80 mb-3">Step 2: Paste your military text</p>
+      <p className="text-xs uppercase tracking-widest text-gold-400/80 mb-3">Step 1: Paste your military text</p>
       <div className="flex items-center gap-3 mb-6">
         <div className="p-2 bg-gold-500/10 rounded-lg text-gold-400">
           <EditIcon />
         </div>
-        <h2 className="text-2xl font-serif font-bold text-light-tan tracking-wide">Enter Your Military Text</h2>
+        <h2 className="text-2xl font-serif font-bold text-light-tan tracking-wide">Paste your military text</h2>
       </div>
 
       <div className="flex flex-col gap-4">
-        <label htmlFor="military-text-input" className="sr-only">
-          Military Text to Translate
+        <label htmlFor="military-text-input" className="text-sm font-medium text-light-tan/90">
+          Military bullets or achievements
         </label>
         <div className="relative">
           <textarea
@@ -50,19 +51,24 @@ const InputForm: React.FC<InputFormProps> = ({ inputText, setInputText, onTransl
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             placeholder={placeholderText}
-            className="w-full h-56 p-6 bg-black/20 border border-white/10 rounded-xl focus:ring-2 focus:ring-gold-500/50 focus:border-gold-500/50 outline-none transition-all duration-300 resize-none placeholder-light-tan/30 text-lg leading-relaxed shadow-inner"
+            className="w-full min-h-[220px] sm:min-h-[280px] p-6 bg-black/20 border border-white/10 rounded-xl focus:ring-2 focus:ring-gold-500/50 focus:border-gold-500/50 outline-none transition-all duration-300 resize-none placeholder-light-tan/30 text-lg leading-relaxed shadow-inner"
             disabled={isLoading}
           />
           <div className="absolute bottom-4 right-4 text-xs text-light-tan/30 font-mono">
             {inputText.length} chars
           </div>
         </div>
+        {error && (
+          <p className="text-sm text-red-300" role="alert">
+            {error}
+          </p>
+        )}
 
         <div className="flex items-start gap-3 text-light-tan/60 text-sm bg-black/20 p-4 rounded-lg border border-white/5">
           <div className="text-gold-500 mt-0.5">
             <InfoIcon />
           </div>
-          <span>Enter military language from awards, evaluations, or job descriptions. The tool will help translate it into civilian-friendly resume bullets.</span>
+          <span>Tip: Paste 2–8 bullets for best results.</span>
         </div>
       </div>
 
@@ -82,7 +88,7 @@ const InputForm: React.FC<InputFormProps> = ({ inputText, setInputText, onTransl
             </span>
           ) : (
             <>
-              <span>Translate Military Text</span>
+              <span>Translate to Civilian Language</span>
               <ArrowRightIcon />
             </>
           )}
@@ -91,7 +97,7 @@ const InputForm: React.FC<InputFormProps> = ({ inputText, setInputText, onTransl
           <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
           </svg>
-          Your data is secure and never stored.
+          Your text is processed securely and never stored.
         </p>
       </div>
     </div>
