@@ -3,6 +3,8 @@ import type { TranslationResult } from '../types';
 
 interface DashboardProps {
   result: TranslationResult;
+  selectedOccupation?: { code: string; title: string } | null;
+  onBackToInputs: () => void;
   onRunAnotherTranslation: () => void;
 }
 
@@ -79,6 +81,16 @@ const getRoleMatchScores = (translatedBullets: BulletItem[]): RoleScore[] => {
   }).sort((a, b) => b.score - a.score).slice(0, 3);
 };
 
+const applySelectedRoleLabel = (topRoleMatches: RoleScore[], selectedRoleTitle?: string): RoleScore[] => {
+  const safeTitle = selectedRoleTitle?.trim();
+  if (!safeTitle || topRoleMatches.length === 0) {
+    return topRoleMatches;
+  }
+
+  const remainingRoles = topRoleMatches.filter((role) => role.role.toLowerCase() !== safeTitle.toLowerCase());
+  return [{ role: safeTitle, score: topRoleMatches[0].score }, ...remainingRoles].slice(0, 3);
+};
+
 const textToBulletLines = (text: string): string[] => {
   const lines = text
     .split(/\r?\n/)
@@ -109,12 +121,20 @@ const buildExportText = (translatedBullets: BulletItem[]): string => {
   return [...header, ...sections].join('\n').trimEnd();
 };
 
-const Dashboard: React.FC<DashboardProps> = ({ result, onRunAnotherTranslation }) => {
+const Dashboard: React.FC<DashboardProps> = ({
+  result,
+  selectedOccupation,
+  onBackToInputs,
+  onRunAnotherTranslation,
+}) => {
   const translatedBullets = getTranslatedBullets(result);
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'error'>('idle');
   const [copyError, setCopyError] = useState<string | null>(null);
   const translationStrengthScore = useMemo(() => getTranslationStrengthScore(translatedBullets), [translatedBullets]);
-  const topRoleMatches = useMemo(() => getRoleMatchScores(translatedBullets), [translatedBullets]);
+  const topRoleMatches = useMemo(
+    () => applySelectedRoleLabel(getRoleMatchScores(translatedBullets), selectedOccupation?.title),
+    [translatedBullets, selectedOccupation?.title]
+  );
   const exportText = useMemo(() => buildExportText(translatedBullets), [translatedBullets]);
 
   const handleCopyBullets = async () => {
@@ -147,6 +167,15 @@ const Dashboard: React.FC<DashboardProps> = ({ result, onRunAnotherTranslation }
     <section className="animate-in fade-in duration-300 rounded-2xl border border-white/10 bg-white/5 p-6 sm:p-8 shadow-xl">
       <div className="flex flex-col gap-2">
         <p className="text-xs uppercase tracking-widest text-gold-400/80">Dashboard Alpha</p>
+        <div>
+          <button
+            type="button"
+            onClick={onBackToInputs}
+            className="text-sm text-light-tan/80 underline underline-offset-4 hover:text-gold-300 transition-colors"
+          >
+            Back to Inputs / Role Fit
+          </button>
+        </div>
         <h1 className="text-3xl sm:text-4xl font-bold text-light-tan tracking-tight font-serif">Translation Results Dashboard</h1>
         <p className="text-sm sm:text-base text-light-tan/70">Review translated bullets and next-step guidance in one place.</p>
       </div>

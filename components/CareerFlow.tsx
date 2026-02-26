@@ -19,7 +19,16 @@ type SelectedOccupation = {
   title: string;
 };
 
+interface CareerFlowProps {
+  userBullets?: string;
+  onSelectedOccupationChange?: (occupation: SelectedOccupation | null) => void;
+}
+
 type FitBand = 'Strong' | 'Partial' | 'Weak';
+type CareerFlowError = {
+  message: string;
+  raw?: string;
+};
 
 type SkillsExtractResponse = {
   inferred_skills?: string[];
@@ -86,7 +95,24 @@ const copyText = async (text: string) => {
   await navigator.clipboard.writeText(text);
 };
 
-const CareerFlow: React.FC = () => {
+const toCareerFlowError = (error: unknown, fallback: string): CareerFlowError => {
+  const rawMessage = error instanceof Error ? error.message : fallback;
+  const looksUnavailable =
+    rawMessage.includes('{"detail":"Not Found"}') ||
+    /\b404\b/.test(rawMessage) ||
+    /\bNot Found\b/i.test(rawMessage);
+
+  if (looksUnavailable) {
+    return {
+      message: 'Role Fit service not available in this environment.',
+      raw: rawMessage,
+    };
+  }
+
+  return { message: rawMessage || fallback };
+};
+
+const CareerFlow: React.FC<CareerFlowProps> = ({ userBullets, onSelectedOccupationChange }) => {
   const [lane, setLane] = useState<Lane>(null);
   const [selectedOccupation, setSelectedOccupation] = useState<SelectedOccupation | null>(null);
 
@@ -94,22 +120,26 @@ const CareerFlow: React.FC = () => {
   const [searchResults, setSearchResults] = useState<OccupationSearchOccupation[]>([]);
   const [hasSearchedKeyword, setHasSearchedKeyword] = useState(false);
   const [isSearchLoading, setIsSearchLoading] = useState(false);
-  const [searchError, setSearchError] = useState<string | null>(null);
+  const [searchError, setSearchError] = useState<CareerFlowError | null>(null);
 
   const [requiredSkills, setRequiredSkills] = useState<OccupationSkill[]>([]);
   const [isSkillsLoading, setIsSkillsLoading] = useState(false);
-  const [skillsError, setSkillsError] = useState<string | null>(null);
+  const [skillsError, setSkillsError] = useState<CareerFlowError | null>(null);
 
-  const [userBullets, setUserBullets] = useState('');
+  const [localUserBullets, setLocalUserBullets] = useState('');
   const [inferredSkills, setInferredSkills] = useState<string[]>([]);
   const [isExtractLoading, setIsExtractLoading] = useState(false);
-  const [extractError, setExtractError] = useState<string | null>(null);
+  const [extractError, setExtractError] = useState<CareerFlowError | null>(null);
 
   const [resumeTranslations, setResumeTranslations] = useState<TranslationResult | null>(null);
   const [isResumeLoading, setIsResumeLoading] = useState(false);
-  const [resumeError, setResumeError] = useState<string | null>(null);
+  const [resumeError, setResumeError] = useState<CareerFlowError | null>(null);
 
   const [copiedSkills, setCopiedSkills] = useState(false);
+  const activeUserBullets = userBullets ?? localUserBullets;
+  const hasActiveUserBullets = activeUserBullets.trim().length > 0;
+  const isUsingMainInputBullets = userBullets !== undefined;
+  const hasMainInputBullets = userBullets?.trim().length ? true : false;
 
   useEffect(() => {
     const loadSkills = async () => {
@@ -125,7 +155,7 @@ const CareerFlow: React.FC = () => {
         const data = await getOccupationSkills(selectedOccupation.code, 'importance', 1, 15);
         setRequiredSkills(data.skills ?? []);
       } catch (error) {
-        setSkillsError(error instanceof Error ? error.message : 'Failed to load required skills.');
+        setSkillsError(toCareerFlowError(error, 'Failed to load required skills.'));
       } finally {
         setIsSkillsLoading(false);
       }
@@ -139,8 +169,16 @@ const CareerFlow: React.FC = () => {
     setResumeError(null);
     setInferredSkills([]);
     setExtractError(null);
-    setUserBullets('');
-  }, [selectedOccupation?.code]);
+    if (!isUsingMainInputBullets) {
+      setLocalUserBullets('');
+    }
+  }, [selectedOccupation?.code, isUsingMainInputBullets]);
+
+  useEffect(() => {
+    if (onSelectedOccupationChange) {
+      onSelectedOccupationChange(selectedOccupation);
+    }
+  }, [onSelectedOccupationChange, selectedOccupation]);
 
   const requiredSkillNames = useMemo(() => requiredSkills.map((skill) => skill.name), [requiredSkills]);
 
@@ -194,7 +232,7 @@ const CareerFlow: React.FC = () => {
   const handleKeywordSearch = async () => {
     const safeKeyword = keyword.trim();
     if (!safeKeyword) {
-      setSearchError('Enter a keyword to search occupations.');
+      setSearchError({ message: 'Enter a keyword to search occupations.' });
       return;
     }
 
@@ -207,7 +245,7 @@ const CareerFlow: React.FC = () => {
       const data = await searchOccupations(safeKeyword, 1, 20);
       setSearchResults(data.occupations ?? []);
     } catch (error) {
-      setSearchError(error instanceof Error ? error.message : 'Failed to search occupations.');
+      setSearchError(toCareerFlowError(error, 'Failed to search occupations.'));
     } finally {
       setIsSearchLoading(false);
     }
@@ -222,12 +260,12 @@ const CareerFlow: React.FC = () => {
   };
 
   const handleExtractSkills = async () => {
-    if (!userBullets.trim()) {
-      setExtractError('Add bullets or achievements first to infer your skills.');
+    if (!activeUserBullets.trim()) {
+      setExtractError({ message: 'Add bullets or achievements first to infer your skills.' });
       return;
     }
     if (!selectedOccupation) {
-      setExtractError('Select an occupation first.');
+      setExtractError({ message: 'Select an occupation first.' });
       return;
     }
 
@@ -242,7 +280,7 @@ const CareerFlow: React.FC = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          text: userBullets,
+          text: activeUserBullets,
           target_role_title: selectedOccupation.title,
           target_role_code: selectedOccupation.code,
         }),
@@ -257,15 +295,15 @@ const CareerFlow: React.FC = () => {
       const parsed = parseInferredSkills(payload);
       setInferredSkills(parsed);
     } catch (error) {
-      setExtractError(error instanceof Error ? error.message : 'Failed to infer skills from your text.');
+      setExtractError(toCareerFlowError(error, 'Failed to infer skills from your text.'));
     } finally {
       setIsExtractLoading(false);
     }
   };
 
   const handleGenerateResumeDraft = async () => {
-    if (!userBullets.trim()) {
-      setResumeError('Add bullets or achievements to generate translated content.');
+    if (!activeUserBullets.trim()) {
+      setResumeError({ message: 'Add bullets or achievements to generate translated content.' });
       setResumeTranslations(null);
       return;
     }
@@ -275,10 +313,10 @@ const CareerFlow: React.FC = () => {
     setResumeTranslations(null);
 
     try {
-      const result = await getTranslationFromBackend(userBullets);
+      const result = await getTranslationFromBackend(activeUserBullets);
       setResumeTranslations(result);
     } catch (error) {
-      setResumeError(error instanceof Error ? error.message : 'Failed to generate resume draft translations.');
+      setResumeError(toCareerFlowError(error, 'Failed to generate resume draft translations.'));
     } finally {
       setIsResumeLoading(false);
     }
@@ -373,7 +411,8 @@ const CareerFlow: React.FC = () => {
 
             {searchError && (
               <div className="rounded-md border border-red-500 bg-red-900/40 p-3 text-red-100 text-sm" role="alert">
-                {searchError}
+                <p>{searchError.message}</p>
+                {searchError.raw && <p className="mt-1 text-xs text-red-200/80 break-words">{searchError.raw}</p>}
               </div>
             )}
 
@@ -428,7 +467,8 @@ const CareerFlow: React.FC = () => {
               )}
               {skillsError && (
                 <div className="mt-2 rounded-md border border-red-500 bg-red-900/40 p-3 text-red-100 text-sm" role="alert">
-                  {skillsError}
+                  <p>{skillsError.message}</p>
+                  {skillsError.raw && <p className="mt-1 text-xs text-red-200/80 break-words">{skillsError.raw}</p>}
                 </div>
               )}
               {!isSkillsLoading && !skillsError && requiredSkills.length === 0 && (
@@ -446,20 +486,30 @@ const CareerFlow: React.FC = () => {
             </div>
 
             <div className="mt-5">
-              <label htmlFor="career-flow-bullets" className="text-sm font-semibold text-light-tan">
-                Paste bullets / achievements (optional)
-              </label>
-              <textarea
-                id="career-flow-bullets"
-                value={userBullets}
-                onChange={(event) => setUserBullets(event.target.value)}
-                className="mt-2 h-36 w-full rounded-lg border border-white/20 bg-black/20 px-3 py-2 text-sm text-light-tan focus:border-gold-400 focus:outline-none"
-                placeholder="Example: Led maintenance team of 12 to sustain mission equipment readiness above 95%."
-              />
+              {isUsingMainInputBullets ? (
+                hasMainInputBullets ? (
+                  <p className="text-sm text-light-tan/70">Using bullets from the main input above.</p>
+                ) : (
+                  <p className="text-sm text-light-tan/70">Add bullets in the main input above to use Role Fit.</p>
+                )
+              ) : (
+                <>
+                  <label htmlFor="career-flow-bullets" className="text-sm font-semibold text-light-tan">
+                    Paste bullets / achievements (optional)
+                  </label>
+                  <textarea
+                    id="career-flow-bullets"
+                    value={localUserBullets}
+                    onChange={(event) => setLocalUserBullets(event.target.value)}
+                    className="mt-2 h-36 w-full rounded-lg border border-white/20 bg-black/20 px-3 py-2 text-sm text-light-tan focus:border-gold-400 focus:outline-none"
+                    placeholder="Example: Led maintenance team of 12 to sustain mission equipment readiness above 95%."
+                  />
+                </>
+              )}
               <button
                 type="button"
                 onClick={handleExtractSkills}
-                disabled={isExtractLoading}
+                disabled={isExtractLoading || !hasActiveUserBullets}
                 className="mt-2 rounded-lg bg-gold-500 px-4 py-2 text-sm font-semibold text-dark-charcoal transition hover:bg-gold-400 disabled:opacity-60"
               >
                 {isExtractLoading ? 'Analyzing skills...' : 'Analyze My Background'}
@@ -467,7 +517,8 @@ const CareerFlow: React.FC = () => {
 
               {extractError && (
                 <div className="mt-2 rounded-md border border-red-500 bg-red-900/40 p-3 text-red-100 text-sm" role="alert">
-                  {extractError}
+                  <p>{extractError.message}</p>
+                  {extractError.raw && <p className="mt-1 text-xs text-red-200/80 break-words">{extractError.raw}</p>}
                 </div>
               )}
 
@@ -563,7 +614,7 @@ const CareerFlow: React.FC = () => {
               <button
                 type="button"
                 onClick={handleGenerateResumeDraft}
-                disabled={isResumeLoading}
+                disabled={isResumeLoading || !hasActiveUserBullets}
                 className="rounded-lg bg-gold-500 px-4 py-2 text-sm font-semibold text-dark-charcoal transition hover:bg-gold-400 disabled:opacity-60"
               >
                 {isResumeLoading ? 'Generating draft...' : 'Generate Resume Draft'}
@@ -578,12 +629,13 @@ const CareerFlow: React.FC = () => {
 
               {resumeError && (
                 <div className="mt-2 rounded-md border border-red-500 bg-red-900/40 p-3 text-red-100 text-sm" role="alert">
-                  {resumeError}
+                  <p>{resumeError.message}</p>
+                  {resumeError.raw && <p className="mt-1 text-xs text-red-200/80 break-words">{resumeError.raw}</p>}
                 </div>
               )}
             </div>
 
-            {!userBullets.trim() && (
+            {!hasActiveUserBullets && (
               <p className="mt-3 text-sm text-light-tan/70">Add bullets in Step 2 to generate Professional, ATS, and Casual draft content.</p>
             )}
 
