@@ -7,17 +7,25 @@ const HomeIcon = () => (
   </svg>
 );
 
-const Header: React.FC = () => {
+interface HeaderProps {
+  onHomeClick: () => void;
+}
+
+const Header: React.FC<HeaderProps> = ({ onHomeClick }) => {
   return (
     <header className="flex justify-between items-center py-4">
       <div className="flex items-center gap-4">
         <VetPivotLogo wrapperClassName="w-12 h-12 p-1.5" iconClassName="w-5" textClassName="text-[7px] -mt-1" />
       </div>
       <nav>
-        <a href="#" className="flex items-center gap-2 text-light-tan/80 hover:text-light-tan transition-colors">
+        <button
+          type="button"
+          onClick={onHomeClick}
+          className="flex items-center gap-2 text-light-tan/80 hover:text-light-tan transition-colors"
+        >
           <HomeIcon />
           <span>Home</span>
-        </a>
+        </button>
       </nav>
     </header>
   );

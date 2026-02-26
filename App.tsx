@@ -2,18 +2,23 @@ import React, { useEffect, useRef, useState } from 'react';
 import Header from './components/Header';
 import InputForm from './components/InputForm';
 import TranslationOutput from './components/TranslationOutput';
-import MOSLookupCard from './components/MOSLookupCard';
+import CareerFlow from './components/CareerFlow';
 import Dashboard from './components/Dashboard';
 import Footer from './components/Footer';
 import VetPivotLogo from './components/VetPivotLogo';
 import type { TranslationResult } from './types';
 import { getTranslationFromBackend } from './services/backendService';
 
+type SelectedOccupation = {
+  code: string;
+  title: string;
+};
 
 const App: React.FC = () => {
   const [mode, setMode] = useState<'input' | 'dashboard'>('input');
   const [inputText, setInputText] = useState<string>('');
   const [result, setResult] = useState<TranslationResult | null>(null);
+  const [selectedOccupation, setSelectedOccupation] = useState<SelectedOccupation | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [inputError, setInputError] = useState<string | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
@@ -62,10 +67,24 @@ const App: React.FC = () => {
     setIsLoading(false);
   };
 
+  const handleBackToInputs = () => {
+    setMode('input');
+  };
+
+  const handleHomeClick = () => {
+    setMode('input');
+    setResult(null);
+    setSelectedOccupation(null);
+    setInputError(null);
+    setApiError(null);
+    setHasSubmitted(false);
+    setIsLoading(false);
+  };
+
   return (
     <div className="min-h-screen flex flex-col items-center p-4 sm:p-6 lg:p-8 font-sans bg-slate-950">
       <div className="w-full max-w-4xl mx-auto bg-dark-charcoal/30 backdrop-blur-md border border-white/10 rounded-3xl p-8 shadow-2xl">
-        <Header />
+        <Header onHomeClick={handleHomeClick} />
         <main className="mt-6 sm:mt-8">
           {mode === 'input' ? (
             <>
@@ -106,20 +125,30 @@ const App: React.FC = () => {
                 <details className="group">
                   <summary className="cursor-pointer list-none flex items-center justify-between text-left">
                     <div>
-                      <p className="text-xs uppercase tracking-widest text-gold-400/80">Step 3 (Optional)</p>
-                      <h2 className="text-xl font-semibold text-light-tan mt-1">Target a role (MOS/O*NET crosswalk)</h2>
-                      <p className="text-sm text-light-tan/60 mt-1">Generate a targeted version after you review your Step 2 results.</p>
+                      <p className="text-xs uppercase tracking-widest text-gold-400/80">Optional Panel</p>
+                      <h2 className="text-xl font-semibold text-light-tan mt-1">Optional: Role Fit (O*NET)</h2>
+                      <p className="text-sm text-light-tan/60 mt-1">Explore role alignment without re-entering your bullets.</p>
                     </div>
                     <span className="text-light-tan/60 text-sm group-open:rotate-180 transition-transform">⌄</span>
                   </summary>
                   <div className="mt-4">
-                    <MOSLookupCard initiallyExpanded />
+                    <CareerFlow
+                      userBullets={inputText}
+                      onSelectedOccupationChange={setSelectedOccupation}
+                    />
                   </div>
                 </details>
               </section>
             </>
           ) : (
-            result && <Dashboard result={result} onRunAnotherTranslation={handleRunAnotherTranslation} />
+            result && (
+              <Dashboard
+                result={result}
+                selectedOccupation={selectedOccupation}
+                onBackToInputs={handleBackToInputs}
+                onRunAnotherTranslation={handleRunAnotherTranslation}
+              />
+            )
           )}
 
           <Footer />
