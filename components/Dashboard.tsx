@@ -13,6 +13,11 @@ interface BulletItem {
   text: string;
 }
 
+interface RoleScore {
+  role: string;
+  score: number;
+}
+
 const getTranslatedBullets = (result: TranslationResult): BulletItem[] => {
   const candidates: BulletItem[] = [
     { id: 'professional', label: 'Professional Version', exportHeading: 'Professional', text: result.professional },
@@ -21,6 +26,57 @@ const getTranslatedBullets = (result: TranslationResult): BulletItem[] => {
   ];
 
   return candidates.filter((candidate) => candidate.text.trim().length > 0);
+};
+
+const clampScore = (value: number): number => Math.max(55, Math.min(90, value));
+
+const containsKeyword = (text: string, keyword: string): boolean => {
+  const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`\\b${escaped}\\b`, 'i');
+  return regex.test(text);
+};
+
+const getTranslationStrengthScore = (translatedBullets: BulletItem[]): number => {
+  const allText = translatedBullets.map((item) => item.text).join('\n');
+  const lowerText = allText.toLowerCase();
+  let score = 60;
+
+  const impactWords = ['increased', 'reduced', 'saved', 'improved'];
+  const matchedImpactWords = impactWords.filter((word) => containsKeyword(lowerText, word)).length;
+  const hasPercent = /\d+(\.\d+)?%/.test(allText);
+  const hasCurrency = /\$\s?\d/.test(allText);
+  const hasNumber = /\b\d+([.,]\d+)?\b/.test(allText);
+  const impactSignals = matchedImpactWords + (hasPercent ? 1 : 0) + (hasCurrency ? 1 : 0) + (hasNumber ? 1 : 0);
+  score += Math.min(18, impactSignals * 3);
+
+  const actionVerbs = ['led', 'managed', 'coordinated', 'executed', 'delivered', 'implemented', 'improved', 'reduced', 'trained'];
+  const matchedActionVerbs = actionVerbs.filter((verb) => containsKeyword(lowerText, verb)).length;
+  score += Math.min(10, matchedActionVerbs * 2);
+
+  const totalLines = allText.split(/\r?\n/).map((line) => line.trim()).filter(Boolean).length;
+  if (totalLines >= 3) {
+    score += 6;
+  } else if (totalLines >= 2) {
+    score += 3;
+  }
+
+  return clampScore(score);
+};
+
+const ROLE_KEYWORDS: Array<{ role: string; keywords: string[] }> = [
+  { role: 'Operations Manager', keywords: ['operations', 'sop', 'process', 'workflow', 'efficiency', 'coordination', 'execution', 'readiness', 'compliance'] },
+  { role: 'Project Manager', keywords: ['project', 'timeline', 'milestones', 'deliverables', 'stakeholders', 'scope', 'risk', 'plan', 'schedule'] },
+  { role: 'Logistics Coordinator', keywords: ['logistics', 'supply', 'inventory', 'shipping', 'distribution', 'procurement', 'transport', 'warehouse'] },
+];
+
+const getRoleMatchScores = (translatedBullets: BulletItem[]): RoleScore[] => {
+  const combinedText = translatedBullets.map((item) => item.text).join(' ').toLowerCase();
+
+  return ROLE_KEYWORDS.map((roleSet) => {
+    const overlap = roleSet.keywords.filter((keyword) => containsKeyword(combinedText, keyword)).length;
+    const score = clampScore(60 + overlap * 4);
+    return { role: roleSet.role, score };
+  }).sort((a, b) => b.score - a.score).slice(0, 3);
 };
 
 const textToBulletLines = (text: string): string[] => {
@@ -57,6 +113,8 @@ const Dashboard: React.FC<DashboardProps> = ({ result, onRunAnotherTranslation }
   const translatedBullets = getTranslatedBullets(result);
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'error'>('idle');
   const [copyError, setCopyError] = useState<string | null>(null);
+  const translationStrengthScore = useMemo(() => getTranslationStrengthScore(translatedBullets), [translatedBullets]);
+  const topRoleMatches = useMemo(() => getRoleMatchScores(translatedBullets), [translatedBullets]);
   const exportText = useMemo(() => buildExportText(translatedBullets), [translatedBullets]);
 
   const handleCopyBullets = async () => {
@@ -95,17 +153,23 @@ const Dashboard: React.FC<DashboardProps> = ({ result, onRunAnotherTranslation }
 
       <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="rounded-xl border border-white/10 bg-black/20 p-5">
-          <p className="text-xs uppercase tracking-wide text-gold-400/80">Translation Strength</p>
-          <p className="mt-3 text-4xl font-bold text-light-tan">74%</p>
-          <p className="mt-2 text-sm text-light-tan/60">Placeholder heuristic score for alpha.</p>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-xs uppercase tracking-wide text-gold-400/80">Translation Strength</p>
+            <span className="text-[10px] uppercase tracking-wide text-light-tan/50">Alpha estimate</span>
+          </div>
+          <p className="mt-3 text-4xl font-bold text-light-tan">{translationStrengthScore}%</p>
+          <p className="mt-2 text-sm text-light-tan/60">Estimated from impact signals, action verbs, and bullet structure.</p>
         </div>
 
         <div className="rounded-xl border border-white/10 bg-black/20 p-5">
-          <p className="text-xs uppercase tracking-wide text-gold-400/80">Top 3 Role Matches</p>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-xs uppercase tracking-wide text-gold-400/80">Top 3 Role Matches</p>
+            <span className="text-[10px] uppercase tracking-wide text-light-tan/50">Alpha estimate</span>
+          </div>
           <ul className="mt-3 space-y-2 text-sm text-light-tan/85">
-            <li>Operations Manager — 82%</li>
-            <li>Project Manager — 76%</li>
-            <li>Logistics Coordinator — 71%</li>
+            {topRoleMatches.map((role) => (
+              <li key={role.role}>{role.role} — {role.score}%</li>
+            ))}
           </ul>
         </div>
       </div>
