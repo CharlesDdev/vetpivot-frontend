@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { TranslationResult } from '../types';
 
 interface DashboardProps {
@@ -127,6 +127,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   onBackToInputs,
   onRunAnotherTranslation,
 }) => {
+  const topAnchorRef = useRef<HTMLDivElement | null>(null);
   const translatedBullets = getTranslatedBullets(result);
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'error'>('idle');
   const [copyError, setCopyError] = useState<string | null>(null);
@@ -136,6 +137,14 @@ const Dashboard: React.FC<DashboardProps> = ({
     [translatedBullets, selectedOccupation?.title]
   );
   const exportText = useMemo(() => buildExportText(translatedBullets), [translatedBullets]);
+
+  useEffect(() => {
+    const frameId = window.requestAnimationFrame(() => {
+      topAnchorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, []);
 
   const handleCopyBullets = async () => {
     try {
@@ -165,6 +174,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 
   return (
     <section className="animate-in fade-in duration-300 rounded-2xl border border-white/10 bg-white/5 p-6 sm:p-8 shadow-xl">
+      <div ref={topAnchorRef} className="scroll-mt-24" aria-hidden="true" />
       <div className="flex flex-col gap-2">
         <p className="text-xs uppercase tracking-widest text-gold-400/80">Dashboard Alpha</p>
         <div>
