@@ -32,3 +32,6 @@ __pycache__/
 .firebase/
 .firebase/
 .firebase/
+
+# Firebase local cache
+.firebase/
