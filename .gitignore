@@ -22,18 +22,15 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
 .env
 .env.*
-.env
-.env.*
+
 __pycache__/
 *.pyc
 
-.firebase/
-.firebase/
-.firebase/
-
 # Firebase local cache
 .firebase/
+
 .claude/
-.claude/
+
