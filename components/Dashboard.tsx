@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import type { TranslationResult } from '../types';
+import type { TranslationResult, TranslationTargetRole } from '../types';
 
 interface DashboardProps {
   result: TranslationResult;
-  selectedOccupation?: { code: string; title: string } | null;
+  selectedOccupation?: TranslationTargetRole | null;
   onBackToInputs: () => void;
   onRunAnotherTranslation: () => void;
 }

@@ -1,17 +1,34 @@
-import type { TranslationResult } from '../types';
+import type { TranslationResult, TranslationTargetRole } from '../types';
 
 // For local development, the backend is expected to run on port 8080.
 // In a production environment, this should be configured to point to the deployed backend URL.
 export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
-export const getTranslationFromBackend = async (text: string): Promise<TranslationResult> => {
+export const getTranslationFromBackend = async (
+  text: string,
+  targetRole?: TranslationTargetRole | null
+): Promise<TranslationResult> => {
   try {
+    const payload: Record<string, unknown> = { text };
+
+    if (targetRole?.code) {
+      payload.target_role_code = targetRole.code;
+    }
+
+    if (targetRole?.title) {
+      payload.target_role_title = targetRole.title;
+    }
+
+    if (targetRole?.topSkills?.length) {
+      payload.target_role_skills = targetRole.topSkills;
+    }
+
     const response = await fetch(`${API_BASE_URL}/api/translate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ text }),
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {

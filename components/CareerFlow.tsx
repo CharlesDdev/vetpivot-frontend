@@ -10,18 +10,14 @@ import {
   type OccupationSearchOccupation,
 } from '../services/onetService';
 import { API_BASE_URL, getTranslationFromBackend } from '../services/backendService';
-import type { TranslationResult } from '../types';
+import type { TranslationResult, TranslationTargetRole } from '../types';
 
 type Lane = 'mos' | 'keyword' | null;
 
-type SelectedOccupation = {
-  code: string;
-  title: string;
-};
-
 interface CareerFlowProps {
   userBullets?: string;
-  onSelectedOccupationChange?: (occupation: SelectedOccupation | null) => void;
+  targetRole?: TranslationTargetRole | null;
+  onTargetRoleChange?: (role: TranslationTargetRole | null) => void;
 }
 
 type FitBand = 'Strong' | 'Partial' | 'Weak';
@@ -35,6 +31,8 @@ type SkillsExtractResponse = {
   skills?: string[];
   profile_skills?: string[];
 };
+
+const IS_BACKGROUND_ANALYSIS_OFFLINE = true;
 
 const normalizeSkill = (value: string): string =>
   value
@@ -112,9 +110,9 @@ const toCareerFlowError = (error: unknown, fallback: string): CareerFlowError =>
   return { message: rawMessage || fallback };
 };
 
-const CareerFlow: React.FC<CareerFlowProps> = ({ userBullets, onSelectedOccupationChange }) => {
+const CareerFlow: React.FC<CareerFlowProps> = ({ userBullets, targetRole, onTargetRoleChange }) => {
   const [lane, setLane] = useState<Lane>(null);
-  const [selectedOccupation, setSelectedOccupation] = useState<SelectedOccupation | null>(null);
+  const [selectedOccupation, setSelectedOccupation] = useState<Omit<TranslationTargetRole, 'topSkills'> | null>(null);
 
   const [keyword, setKeyword] = useState('');
   const [searchResults, setSearchResults] = useState<OccupationSearchOccupation[]>([]);
@@ -175,12 +173,41 @@ const CareerFlow: React.FC<CareerFlowProps> = ({ userBullets, onSelectedOccupati
   }, [selectedOccupation?.code, isUsingMainInputBullets]);
 
   useEffect(() => {
-    if (onSelectedOccupationChange) {
-      onSelectedOccupationChange(selectedOccupation);
+    if (!selectedOccupation) {
+      onTargetRoleChange?.(null);
+      return;
     }
-  }, [onSelectedOccupationChange, selectedOccupation]);
+
+    onTargetRoleChange?.({
+      code: selectedOccupation.code,
+      title: selectedOccupation.title,
+      topSkills: [],
+    });
+  }, [onTargetRoleChange, selectedOccupation]);
 
   const requiredSkillNames = useMemo(() => requiredSkills.map((skill) => skill.name), [requiredSkills]);
+
+  useEffect(() => {
+    if (!selectedOccupation) {
+      return;
+    }
+
+    onTargetRoleChange?.({
+      code: selectedOccupation.code,
+      title: selectedOccupation.title,
+      topSkills: requiredSkillNames,
+    });
+  }, [onTargetRoleChange, requiredSkillNames, selectedOccupation]);
+
+  useEffect(() => {
+    if (targetRole !== null || !selectedOccupation) {
+      return;
+    }
+
+    setSelectedOccupation(null);
+    setRequiredSkills([]);
+    setSkillsError(null);
+  }, [selectedOccupation, targetRole]);
 
   const inferredSkillMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -259,6 +286,13 @@ const CareerFlow: React.FC<CareerFlowProps> = ({ userBullets, onSelectedOccupati
     setSelectedOccupation({ code: occupation.code, title: occupation.title });
   };
 
+  const handleClearSelectedOccupation = () => {
+    setSelectedOccupation(null);
+    setRequiredSkills([]);
+    setSkillsError(null);
+    setSearchError(null);
+  };
+
   const handleExtractSkills = async () => {
     if (!activeUserBullets.trim()) {
       setExtractError({ message: 'Add bullets or achievements first to infer your skills.' });
@@ -313,7 +347,7 @@ const CareerFlow: React.FC<CareerFlowProps> = ({ userBullets, onSelectedOccupati
     setResumeTranslations(null);
 
     try {
-      const result = await getTranslationFromBackend(activeUserBullets);
+      const result = await getTranslationFromBackend(activeUserBullets, targetRole);
       setResumeTranslations(result);
     } catch (error) {
       setResumeError(toCareerFlowError(error, 'Failed to generate resume draft translations.'));
@@ -445,7 +479,18 @@ const CareerFlow: React.FC<CareerFlowProps> = ({ userBullets, onSelectedOccupati
 
         {selectedOccupation && (
           <div className="mt-4 rounded-lg border border-emerald-500/40 bg-emerald-900/20 px-3 py-2 text-sm text-emerald-100">
-            Selected occupation: <strong>{selectedOccupation.title}</strong> ({selectedOccupation.code})
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <p>
+                Selected occupation: <strong>{selectedOccupation.title}</strong> ({selectedOccupation.code})
+              </p>
+              <button
+                type="button"
+                onClick={handleClearSelectedOccupation}
+                className="self-start rounded-md border border-emerald-200/30 px-3 py-1 text-xs font-medium text-emerald-50 transition hover:border-emerald-200/60 sm:self-auto"
+              >
+                Clear selection
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -486,6 +531,13 @@ const CareerFlow: React.FC<CareerFlowProps> = ({ userBullets, onSelectedOccupati
             </div>
 
             <div className="mt-5">
+              <div className="rounded-md border border-white/15 bg-black/20 p-3">
+                <p className="text-sm font-semibold text-light-tan">Background analysis (Alpha)</p>
+                <p className="mt-1 text-sm text-light-tan/70">
+                  Temporarily offline while we improve reliability. Use the dashboard heuristics + Role Fit for now.
+                </p>
+              </div>
+
               {isUsingMainInputBullets ? (
                 hasMainInputBullets ? (
                   <p className="text-sm text-light-tan/70">Using bullets from the main input above.</p>
@@ -508,21 +560,21 @@ const CareerFlow: React.FC<CareerFlowProps> = ({ userBullets, onSelectedOccupati
               )}
               <button
                 type="button"
-                onClick={handleExtractSkills}
-                disabled={isExtractLoading || !hasActiveUserBullets}
+                onClick={IS_BACKGROUND_ANALYSIS_OFFLINE ? undefined : handleExtractSkills}
+                disabled={IS_BACKGROUND_ANALYSIS_OFFLINE || isExtractLoading || !hasActiveUserBullets}
                 className="mt-2 rounded-lg bg-gold-500 px-4 py-2 text-sm font-semibold text-dark-charcoal transition hover:bg-gold-400 disabled:opacity-60"
               >
                 {isExtractLoading ? 'Analyzing skills...' : 'Analyze My Background'}
               </button>
 
-              {extractError && (
+              {!IS_BACKGROUND_ANALYSIS_OFFLINE && extractError && (
                 <div className="mt-2 rounded-md border border-red-500 bg-red-900/40 p-3 text-red-100 text-sm" role="alert">
                   <p>{extractError.message}</p>
                   {extractError.raw && <p className="mt-1 text-xs text-red-200/80 break-words">{extractError.raw}</p>}
                 </div>
               )}
 
-              {!isExtractLoading && !extractError && inferredSkills.length > 0 && (
+              {!IS_BACKGROUND_ANALYSIS_OFFLINE && !isExtractLoading && !extractError && inferredSkills.length > 0 && (
                 <div className="mt-3">
                   <h4 className="text-sm font-semibold text-light-tan">Inferred Skills</h4>
                   <ul className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">

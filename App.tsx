@@ -6,19 +6,14 @@ import CareerFlow from './components/CareerFlow';
 import Dashboard from './components/Dashboard';
 import Footer from './components/Footer';
 import VetPivotLogo from './components/VetPivotLogo';
-import type { TranslationResult } from './types';
+import type { TranslationResult, TranslationTargetRole } from './types';
 import { getTranslationFromBackend } from './services/backendService';
-
-type SelectedOccupation = {
-  code: string;
-  title: string;
-};
 
 const App: React.FC = () => {
   const [mode, setMode] = useState<'input' | 'dashboard'>('input');
   const [inputText, setInputText] = useState<string>('');
   const [result, setResult] = useState<TranslationResult | null>(null);
-  const [selectedOccupation, setSelectedOccupation] = useState<SelectedOccupation | null>(null);
+  const [targetRole, setTargetRole] = useState<TranslationTargetRole | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [inputError, setInputError] = useState<string | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
@@ -45,7 +40,7 @@ const App: React.FC = () => {
     setMode('input');
 
     try {
-      const translationResult = await getTranslationFromBackend(inputText);
+      const translationResult = await getTranslationFromBackend(inputText, targetRole);
       setResult(translationResult);
       setMode('dashboard');
     } catch (err) {
@@ -61,6 +56,7 @@ const App: React.FC = () => {
     setMode('input');
     setInputText('');
     setResult(null);
+    setTargetRole(null);
     setInputError(null);
     setApiError(null);
     setHasSubmitted(false);
@@ -74,11 +70,15 @@ const App: React.FC = () => {
   const handleHomeClick = () => {
     setMode('input');
     setResult(null);
-    setSelectedOccupation(null);
+    setTargetRole(null);
     setInputError(null);
     setApiError(null);
     setHasSubmitted(false);
     setIsLoading(false);
+  };
+
+  const handleClearTargetRole = () => {
+    setTargetRole(null);
   };
 
   return (
@@ -110,6 +110,20 @@ const App: React.FC = () => {
                   isLoading={isLoading}
                   error={inputError}
                 />
+                {targetRole && (
+                  <div className="mt-4 flex flex-col gap-3 rounded-xl border border-gold-500/30 bg-gold-500/10 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-sm text-light-tan">
+                      Targeting: <span className="font-semibold">{targetRole.title}</span> ({targetRole.code})
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleClearTargetRole}
+                      className="self-start rounded-md border border-white/20 px-3 py-1 text-xs font-medium text-light-tan/90 transition hover:border-gold-400 hover:text-gold-200 sm:self-auto"
+                    >
+                      Clear target
+                    </button>
+                  </div>
+                )}
               </section>
               <div className="mt-12" ref={outputRef} id="outputs-section">
                 <TranslationOutput
@@ -134,7 +148,8 @@ const App: React.FC = () => {
                   <div className="mt-4">
                     <CareerFlow
                       userBullets={inputText}
-                      onSelectedOccupationChange={setSelectedOccupation}
+                      targetRole={targetRole}
+                      onTargetRoleChange={setTargetRole}
                     />
                   </div>
                 </details>
@@ -144,7 +159,7 @@ const App: React.FC = () => {
             result && (
               <Dashboard
                 result={result}
-                selectedOccupation={selectedOccupation}
+                selectedOccupation={targetRole}
                 onBackToInputs={handleBackToInputs}
                 onRunAnotherTranslation={handleRunAnotherTranslation}
               />
