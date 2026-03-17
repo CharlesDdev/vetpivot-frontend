@@ -45,6 +45,7 @@ const InputForm: React.FC<InputFormProps> = ({ inputText, setInputText, onTransl
         <label htmlFor="military-text-input" className="text-sm font-medium text-light-tan/90">
           Military bullets or achievements
         </label>
+        <p className="text-sm text-light-tan/70">Paste one bullet at a time for best results.</p>
         <div className="relative">
           <textarea
             id="military-text-input"
@@ -68,7 +69,7 @@ const InputForm: React.FC<InputFormProps> = ({ inputText, setInputText, onTransl
           <div className="text-gold-500 mt-0.5">
             <InfoIcon />
           </div>
-          <span>Tip: Paste 2–8 bullets for best results.</span>
+          <span>Keep each bullet concise and outcome-focused.</span>
         </div>
       </div>
 

@@ -66,7 +66,7 @@ const App: React.FC = () => {
                 Translate military experience into civilian-ready resume bullets
               </h1>
               <p className="mt-3 text-base text-light-tan/80 max-w-2xl mx-auto leading-relaxed">
-                Paste your bullet or short experience text and get clear versions you can copy in seconds.
+                Paste your bullet or short experience text and get one clear translation you can copy in seconds.
               </p>
               <p className="mt-3 text-sm text-light-tan/60">
                 Your text is processed securely and never stored.
