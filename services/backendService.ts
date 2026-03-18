@@ -10,6 +10,11 @@ export const getTranslationFromBackend = async (
 ): Promise<TranslationResult> => {
   try {
     const payload: Record<string, unknown> = { text };
+    payload.realism_lock = {
+      no_invented_metrics: true,
+      no_invented_outcomes: true,
+      use_only_user_provided_numbers: true,
+    };
 
     if (targetRole?.code) {
       payload.target_role_code = targetRole.code;
@@ -49,7 +54,7 @@ export const getTranslationFromBackend = async (
     if (!isValid) {
       throw new Error('Invalid data structure received from backend');
     }
-    return result;
+    return sanitizeTranslationResult(result, text);
   } catch (error) {
     console.error('Error calling backend service:', error);
     if (error instanceof TypeError) {
@@ -60,4 +65,30 @@ export const getTranslationFromBackend = async (
     }
     throw new Error('An unknown error occurred while fetching the translation.');
   }
+};
+
+const NUMERIC_TOKEN_REGEX = /\$?\d[\d,]*(?:\.\d+)?(?:%|[kKmMbB])?/g;
+
+const normalizeNumericToken = (token: string): string => token.toLowerCase().replace(/,/g, '');
+
+const getAllowedNumericTokens = (sourceText: string): Set<string> => {
+  const matches = sourceText.match(NUMERIC_TOKEN_REGEX) ?? [];
+  return new Set(matches.map(normalizeNumericToken));
+};
+
+const stripUntrustedNumericClaims = (value: string, allowedTokens: Set<string>): string => {
+  return value
+    .replace(NUMERIC_TOKEN_REGEX, (token) => (allowedTokens.has(normalizeNumericToken(token)) ? token : ''))
+    .replace(/\s{2,}/g, ' ')
+    .replace(/\s+([,.;:])/g, '$1')
+    .trim();
+};
+
+const sanitizeTranslationResult = (result: TranslationResult, sourceText: string): TranslationResult => {
+  const allowedTokens = getAllowedNumericTokens(sourceText);
+  return {
+    professional: stripUntrustedNumericClaims(result.professional, allowedTokens),
+    casual: stripUntrustedNumericClaims(result.casual, allowedTokens),
+    ats: stripUntrustedNumericClaims(result.ats, allowedTokens),
+  };
 };

@@ -69,7 +69,7 @@ const InputForm: React.FC<InputFormProps> = ({ inputText, setInputText, onTransl
           <div className="text-gold-500 mt-0.5">
             <InfoIcon />
           </div>
-          <span>Keep each bullet concise and outcome-focused.</span>
+          <span>Keep bullets concise and only include metrics you can verify.</span>
         </div>
       </div>
 
