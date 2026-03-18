@@ -21,12 +21,22 @@ const ArrowRightIcon = () => (
 interface InputFormProps {
   inputText: string;
   setInputText: (text: string) => void;
+  translationMode: 'bullet' | 'summary';
+  setTranslationMode: (mode: 'bullet' | 'summary') => void;
   onTranslate: () => void;
   isLoading: boolean;
   error?: string | null;
 }
 
-const InputForm: React.FC<InputFormProps> = ({ inputText, setInputText, onTranslate, isLoading, error }) => {
+const InputForm: React.FC<InputFormProps> = ({
+  inputText,
+  setInputText,
+  translationMode,
+  setTranslationMode,
+  onTranslate,
+  isLoading,
+  error,
+}) => {
   const placeholderText = `Paste your military text here. For example: 'Led a team of 12 soldiers during deployment operations responsible for maintaining equipment worth $2.3M...'`;
 
   return (
@@ -42,10 +52,43 @@ const InputForm: React.FC<InputFormProps> = ({ inputText, setInputText, onTransl
       </div>
 
       <div className="flex flex-col gap-4">
+        <div>
+          <p className="text-sm font-medium text-light-tan/90 mb-2">Mode</p>
+          <div className="inline-flex rounded-lg border border-white/10 bg-black/20 p-1">
+            <button
+              type="button"
+              onClick={() => setTranslationMode('bullet')}
+              disabled={isLoading}
+              className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
+                translationMode === 'bullet'
+                  ? 'bg-gold-500/90 text-dark-charcoal font-semibold'
+                  : 'text-light-tan/80 hover:text-light-tan hover:bg-white/5'
+              }`}
+            >
+              Bullet Mode
+            </button>
+            <button
+              type="button"
+              onClick={() => setTranslationMode('summary')}
+              disabled={isLoading}
+              className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
+                translationMode === 'summary'
+                  ? 'bg-gold-500/90 text-dark-charcoal font-semibold'
+                  : 'text-light-tan/80 hover:text-light-tan hover:bg-white/5'
+              }`}
+            >
+              Summary Mode
+            </button>
+          </div>
+        </div>
         <label htmlFor="military-text-input" className="text-sm font-medium text-light-tan/90">
           Military bullets or achievements
         </label>
-        <p className="text-sm text-light-tan/70">Paste one bullet at a time for best results.</p>
+        <p className="text-sm text-light-tan/70">
+          {translationMode === 'bullet'
+            ? 'Paste one bullet at a time for best results.'
+            : 'Paste multiple bullets together to generate one civilian summary.'}
+        </p>
         <div className="relative">
           <textarea
             id="military-text-input"
