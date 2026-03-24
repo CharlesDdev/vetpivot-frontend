@@ -10,3 +10,16 @@ export interface TranslationResult {
   casual: string;
   ats: string;
 }
+
+export interface GuidedRoleMatch {
+  id: string;
+  title: string;
+  summary: string;
+  focusArea: string;
+}
+
+export interface GuidedTranslationResult {
+  targetRoleTitle: string;
+  translatedBullet: string;
+  explanation: string;
+}
