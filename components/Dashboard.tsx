@@ -22,9 +22,7 @@ interface RoleScore {
 
 const getTranslatedBullets = (result: TranslationResult): BulletItem[] => {
   const candidates: BulletItem[] = [
-    { id: 'professional', label: 'Professional Version', exportHeading: 'Professional', text: result.professional },
-    { id: 'plain', label: 'Plain-English Version', exportHeading: 'Plain English', text: result.casual },
-    { id: 'ats', label: 'ATS Version', exportHeading: 'ATS', text: result.ats },
+    { id: 'translation', label: 'Civilian Translation', exportHeading: 'Civilian Translation', text: result.translation },
   ];
 
   return candidates.filter((candidate) => candidate.text.trim().length > 0);

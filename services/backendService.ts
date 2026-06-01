@@ -45,17 +45,14 @@ export const getTranslationFromBackend = async (
       const errorData = await response
         .json()
         .catch(() => ({ detail: 'An unknown error occurred on the server.' }));
-      const message = errorData.detail || `HTTP error! status: ${response.status}`;
+      const message = errorData.message || errorData.detail || `HTTP error! status: ${response.status}`;
       throw new Error(message);
     }
 
     const result: TranslationResult = await response.json();
 
     // Basic validation
-    const isValid =
-      typeof result.professional === 'string' &&
-      typeof result.casual === 'string' &&
-      typeof result.ats === 'string';
+    const isValid = typeof result.translation === 'string';
     if (!isValid) {
       throw new Error('Invalid data structure received from backend');
     }
@@ -92,8 +89,6 @@ const stripUntrustedNumericClaims = (value: string, allowedTokens: Set<string>):
 const sanitizeTranslationResult = (result: TranslationResult, sourceText: string): TranslationResult => {
   const allowedTokens = getAllowedNumericTokens(sourceText);
   return {
-    professional: stripUntrustedNumericClaims(result.professional, allowedTokens),
-    casual: stripUntrustedNumericClaims(result.casual, allowedTokens),
-    ats: stripUntrustedNumericClaims(result.ats, allowedTokens),
+    translation: stripUntrustedNumericClaims(result.translation, allowedTokens),
   };
 };

@@ -21,8 +21,6 @@ const ArrowRightIcon = () => (
 interface InputFormProps {
   inputText: string;
   setInputText: (text: string) => void;
-  translationMode: 'bullet' | 'summary';
-  setTranslationMode: (mode: 'bullet' | 'summary') => void;
   onTranslate: () => void;
   isLoading: boolean;
   error?: string | null;
@@ -31,8 +29,6 @@ interface InputFormProps {
 const InputForm: React.FC<InputFormProps> = ({
   inputText,
   setInputText,
-  translationMode,
-  setTranslationMode,
   onTranslate,
   isLoading,
   error,
@@ -43,51 +39,20 @@ const InputForm: React.FC<InputFormProps> = ({
     <div className="bg-white/5 backdrop-blur-sm border border-white/10 p-6 sm:p-8 rounded-2xl shadow-xl relative overflow-hidden group">
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-gold-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
 
-      <p className="text-xs uppercase tracking-widest text-gold-400/80 mb-3">Step 1: Paste text</p>
+      <p className="text-xs uppercase tracking-widest text-gold-400/80 mb-3">Step 1</p>
       <div className="flex items-center gap-3 mb-6">
         <div className="p-2 bg-gold-500/10 rounded-lg text-gold-400">
           <EditIcon />
         </div>
-        <h2 className="text-2xl font-serif font-bold text-light-tan tracking-wide">Paste text</h2>
+        <h2 className="text-2xl font-serif font-bold text-light-tan tracking-wide">Paste your military experience</h2>
       </div>
 
       <div className="flex flex-col gap-4">
-        <div>
-          <p className="text-sm font-medium text-light-tan/90 mb-2">Mode</p>
-          <div className="inline-flex rounded-lg border border-white/10 bg-black/20 p-1">
-            <button
-              type="button"
-              onClick={() => setTranslationMode('bullet')}
-              disabled={isLoading}
-              className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
-                translationMode === 'bullet'
-                  ? 'bg-gold-500/90 text-dark-charcoal font-semibold'
-                  : 'text-light-tan/80 hover:text-light-tan hover:bg-white/5'
-              }`}
-            >
-              Bullet Mode
-            </button>
-            <button
-              type="button"
-              onClick={() => setTranslationMode('summary')}
-              disabled={isLoading}
-              className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
-                translationMode === 'summary'
-                  ? 'bg-gold-500/90 text-dark-charcoal font-semibold'
-                  : 'text-light-tan/80 hover:text-light-tan hover:bg-white/5'
-              }`}
-            >
-              Summary Mode
-            </button>
-          </div>
-        </div>
         <label htmlFor="military-text-input" className="text-sm font-medium text-light-tan/90">
-          Military bullets or achievements
+          Military bullet or short paragraph
         </label>
         <p className="text-sm text-light-tan/70">
-          {translationMode === 'bullet'
-            ? 'Paste one bullet at a time for best results.'
-            : 'Paste multiple bullets together to generate one civilian summary.'}
+          Paste one example at a time to generate one clear civilian-ready result.
         </p>
         <div className="relative">
           <textarea
@@ -112,7 +77,7 @@ const InputForm: React.FC<InputFormProps> = ({
           <div className="text-gold-500 mt-0.5">
             <InfoIcon />
           </div>
-          <span>Keep bullets concise and only include metrics you can verify.</span>
+          <span>Only include responsibilities and metrics you can verify.</span>
         </div>
       </div>
 

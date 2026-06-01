@@ -688,25 +688,15 @@ const CareerFlow: React.FC<CareerFlowProps> = ({ userBullets, targetRole, onTarg
             </div>
 
             {!hasActiveUserBullets && (
-              <p className="mt-3 text-sm text-light-tan/70">Add bullets in Step 2 to generate Professional, ATS, and Casual draft content.</p>
+              <p className="mt-3 text-sm text-light-tan/70">Add bullets in Step 2 to generate a civilian resume draft.</p>
             )}
 
             {resumeTranslations && !isResumeLoading && (
               <div className="mt-4 grid grid-cols-1 gap-4">
                 <TranslationCard
-                  title="Professional"
-                  content={resumeTranslations.professional}
-                  copyLabel="Copy professional"
-                />
-                <TranslationCard
-                  title="ATS"
-                  content={resumeTranslations.ats}
-                  copyLabel="Copy ATS"
-                />
-                <TranslationCard
-                  title="Casual"
-                  content={resumeTranslations.casual}
-                  copyLabel="Copy casual"
+                  title="Civilian Translation"
+                  content={resumeTranslations.translation}
+                  copyLabel="Copy translation"
                 />
               </div>
             )}

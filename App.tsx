@@ -7,11 +7,8 @@ import VetPivotLogo from './components/VetPivotLogo';
 import type { TranslationResult } from './types';
 import { getTranslationFromBackend } from './services/backendService';
 
-type TranslationMode = 'bullet' | 'summary';
-
 const App: React.FC = () => {
   const [inputText, setInputText] = useState<string>('');
-  const [translationMode, setTranslationMode] = useState<TranslationMode>('bullet');
   const [result, setResult] = useState<TranslationResult | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [inputError, setInputError] = useState<string | null>(null);
@@ -38,10 +35,10 @@ const App: React.FC = () => {
     setResult(null);
 
     try {
-      const translationResult = await getTranslationFromBackend(inputText, null, translationMode);
+      const translationResult = await getTranslationFromBackend(inputText, null, 'bullet');
       setResult(translationResult);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to get translations. Please try again.';
+      const errorMessage = err instanceof Error ? err.message : 'Failed to get translation. Please try again.';
       setApiError(errorMessage);
       console.error(err);
     } finally {
@@ -81,8 +78,6 @@ const App: React.FC = () => {
             <InputForm
               inputText={inputText}
               setInputText={setInputText}
-              translationMode={translationMode}
-              setTranslationMode={setTranslationMode}
               onTranslate={handleTranslate}
               isLoading={isLoading}
               error={inputError}
