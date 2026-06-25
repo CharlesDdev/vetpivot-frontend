@@ -70,13 +70,15 @@ const TranslationOutput: React.FC<TranslationOutputProps> = ({
 
         {!isLoading && !error && translations && (
           <div className="grid grid-cols-1 gap-4">
-            <TranslationCard
+            <LabeledTranslationCard
               title="Professional Resume Bullet"
+              label="Human-readable"
               content={professionalBullet}
               copyLabel="Copy resume bullet"
             />
-            <TranslationCard
+            <LabeledTranslationCard
               title="ATS Version"
+              label="Keyword-focused"
               content={atsBullet}
               copyLabel="Copy ATS version"
             />
@@ -84,27 +86,16 @@ const TranslationOutput: React.FC<TranslationOutputProps> = ({
               assessment={translations.job_fit_assessment}
               fit={getFitDisplay(translations.job_fit_assessment)}
             />
-            <TranslationCard
-              title="Missing Keywords"
-              content={listText(translations.missing_keywords)}
-              copyLabel="Copy keywords"
-            />
+            <KeywordChipsCard keywords={translations.missing_keywords} />
             <TranslationCard
               title="Interview Talking Points"
               content={listText(translations.interview_talking_points)}
               copyLabel="Copy talking points"
             />
-            <TranslationCard
-              title="Safety & Evaluation Notes"
-              content={[
-                translations.evaluation_notes,
-                '',
-                'Safety flags:',
-                listText(translations.safety_flags),
-                '',
-                `Mode: ${translations.mode}`,
-              ].join('\n')}
-              copyLabel="Copy safety notes"
+            <SafetyEvaluationCard
+              evaluationNotes={translations.evaluation_notes}
+              safetyFlags={translations.safety_flags}
+              mode={translations.mode}
             />
           </div>
         )}
@@ -117,6 +108,101 @@ const TranslationOutput: React.FC<TranslationOutputProps> = ({
         )}
       </div>
     </section>
+  );
+};
+
+interface LabeledTranslationCardProps {
+  title: string;
+  label: string;
+  content: string;
+  copyLabel: string;
+}
+
+const LabeledTranslationCard: React.FC<LabeledTranslationCardProps> = ({
+  title,
+  label,
+  content,
+  copyLabel,
+}) => {
+  const [copied, setCopied] = React.useState(false);
+
+  const handleCopy = React.useCallback(() => {
+    navigator.clipboard.writeText(content).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }, [content]);
+
+  return (
+    <div className="bg-dark-charcoal/50 border border-white/10 rounded-xl shadow-lg overflow-hidden">
+      <div className="px-4 py-3 flex flex-col gap-3 bg-dark-charcoal/60 border-b border-white/10 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <div className="mb-1 inline-flex rounded-full border border-gold-400/25 bg-gold-400/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-gold-300">
+            {label}
+          </div>
+          <h3 className="text-lg font-bold text-light-tan">{title}</h3>
+        </div>
+        <button
+          onClick={handleCopy}
+          className={`self-start px-3 py-1.5 text-sm rounded-md flex items-center gap-2 transition-colors duration-200 whitespace-nowrap sm:self-center ${copied ? 'bg-green-600 text-white' : 'bg-dark-olive hover:bg-opacity-80 text-light-tan/90'}`}
+          aria-label={copyLabel}
+          title={copyLabel}
+        >
+          <span>{copied ? 'Copied' : copyLabel}</span>
+        </button>
+      </div>
+      <div className="px-4 py-4">
+        <p className="text-sm sm:text-base text-light-tan/90 whitespace-pre-wrap">{content}</p>
+      </div>
+    </div>
+  );
+};
+
+interface KeywordChipsCardProps {
+  keywords: string[];
+}
+
+const KeywordChipsCard: React.FC<KeywordChipsCardProps> = ({ keywords }) => {
+  const [copied, setCopied] = React.useState(false);
+  const content = keywords.length ? keywords.join('\n') : 'None identified.';
+
+  const handleCopy = React.useCallback(() => {
+    navigator.clipboard.writeText(content).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }, [content]);
+
+  return (
+    <div className="bg-dark-charcoal/50 border border-white/10 rounded-xl shadow-lg overflow-hidden">
+      <div className="px-4 py-3 flex justify-between items-center gap-3 bg-dark-charcoal/60 border-b border-white/10">
+        <h3 className="text-lg font-bold text-light-tan">Missing Keywords</h3>
+        <button
+          onClick={handleCopy}
+          className={`px-3 py-1.5 text-sm rounded-md flex items-center gap-2 transition-colors duration-200 whitespace-nowrap ${copied ? 'bg-green-600 text-white' : 'bg-dark-olive hover:bg-opacity-80 text-light-tan/90'}`}
+          aria-label="Copy keywords"
+          title="Copy keywords"
+        >
+          <span>{copied ? 'Copied' : 'Copy keywords'}</span>
+        </button>
+      </div>
+      <div className="px-4 py-4">
+        {keywords.length ? (
+          <div className="flex flex-wrap gap-2">
+            {keywords.map((keyword) => (
+              <span
+                key={keyword}
+                className="rounded-full border border-gold-400/25 bg-gold-400/10 px-3 py-1 text-sm font-medium text-light-tan/90"
+              >
+                {keyword}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm sm:text-base text-light-tan/90">None identified.</p>
+        )}
+      </div>
+    </div>
   );
 };
 
@@ -171,7 +257,77 @@ const JobFitAssessmentCard: React.FC<JobFitAssessmentCardProps> = ({ assessment,
             {fit.label}
           </p>
           <p className="mt-2 text-sm sm:text-base text-light-tan/90 whitespace-pre-wrap">{assessment}</p>
+          <p className="mt-2 text-xs text-light-tan/60">Approximate visual guide, not a hiring score.</p>
         </div>
+      </div>
+    </div>
+  );
+};
+
+interface SafetyEvaluationCardProps {
+  evaluationNotes: string;
+  safetyFlags: string[];
+  mode: string;
+}
+
+const SafetyEvaluationCard: React.FC<SafetyEvaluationCardProps> = ({
+  evaluationNotes,
+  safetyFlags,
+  mode,
+}) => {
+  const [copied, setCopied] = React.useState(false);
+  const [isExpanded, setIsExpanded] = React.useState(false);
+  const flagsText = safetyFlags.length ? safetyFlags.join('\n') : 'None identified.';
+  const content = [
+    evaluationNotes,
+    '',
+    'Safety flags:',
+    flagsText,
+    '',
+    `Mode: ${mode}`,
+  ].join('\n');
+
+  const handleCopy = React.useCallback(() => {
+    navigator.clipboard.writeText(content).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }, [content]);
+
+  return (
+    <div className="bg-dark-charcoal/50 border border-white/10 rounded-xl shadow-lg overflow-hidden">
+      <div className="px-4 py-3 flex flex-col gap-3 bg-dark-charcoal/60 border-b border-white/10 sm:flex-row sm:items-center sm:justify-between">
+        <h3 className="text-lg font-bold text-light-tan">Safety & Evaluation Notes</h3>
+        <button
+          onClick={handleCopy}
+          className={`self-start px-3 py-1.5 text-sm rounded-md flex items-center gap-2 transition-colors duration-200 whitespace-nowrap sm:self-center ${copied ? 'bg-green-600 text-white' : 'bg-dark-olive hover:bg-opacity-80 text-light-tan/90'}`}
+          aria-label="Copy safety notes"
+          title="Copy safety notes"
+        >
+          <span>{copied ? 'Copied' : 'Copy safety notes'}</span>
+        </button>
+      </div>
+      <div className="px-4 py-4">
+        <p className="text-sm sm:text-base text-light-tan/90 whitespace-pre-wrap">{evaluationNotes}</p>
+        <div className="mt-4">
+          <p className="text-sm font-semibold text-light-tan">Safety flags:</p>
+          <p className="mt-1 text-sm sm:text-base text-light-tan/90 whitespace-pre-wrap">{flagsText}</p>
+        </div>
+        <p className="mt-4 text-sm text-light-tan/80">Mode: {mode}</p>
+        <button
+          type="button"
+          onClick={() => setIsExpanded((current) => !current)}
+          className="mt-4 text-sm font-semibold text-gold-300 underline decoration-gold-300/40 underline-offset-4 hover:text-gold-200"
+          aria-expanded={isExpanded}
+        >
+          Why this matters
+        </button>
+        {isExpanded && (
+          <p className="mt-2 rounded-lg border border-white/10 bg-black/20 px-3 py-3 text-sm text-light-tan/80">
+            Safety notes help prevent unsupported claims, factual drift, and overstatement before a resume
+            bullet is used in an application or interview.
+          </p>
+        )}
       </div>
     </div>
   );
