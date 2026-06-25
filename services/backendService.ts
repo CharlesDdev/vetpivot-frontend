@@ -1,8 +1,9 @@
-import type { TranslationResult, TranslationTargetRole } from '../types';
+import type { CareerAgentResult, TranslationResult, TranslationTargetRole } from '../types';
 
 // For local development, the backend is expected to run on port 8080.
 // In a production environment, this should be configured to point to the deployed backend URL.
 export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+export const CAREER_AGENT_API_BASE_URL = import.meta.env.VITE_CAREER_AGENT_API_URL || 'http://127.0.0.1:8000';
 type TranslationMode = 'bullet' | 'summary';
 
 export const getTranslationFromBackend = async (
@@ -66,6 +67,57 @@ export const getTranslationFromBackend = async (
       throw new Error(error.message);
     }
     throw new Error('An unknown error occurred while fetching the translation.');
+  }
+};
+
+export const getCareerAgentFromBackend = async (
+  militaryExperience: string,
+  mosBranch: string,
+  targetJobDescription: string
+): Promise<CareerAgentResult> => {
+  try {
+    const response = await fetch(`${CAREER_AGENT_API_BASE_URL}/api/career-agent`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        military_experience: militaryExperience,
+        mos_branch: mosBranch,
+        target_job_description: targetJobDescription,
+        mode: 'mock',
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response
+        .json()
+        .catch(() => ({ detail: 'An unknown error occurred on the Career Agent API.' }));
+      const message = errorData.message || errorData.detail || `HTTP error! status: ${response.status}`;
+      throw new Error(message);
+    }
+
+    const result: CareerAgentResult = await response.json();
+    if (
+      typeof result.professional_resume_bullet !== 'string' ||
+      typeof result.ats_optimized_bullet !== 'string' ||
+      typeof result.job_fit_assessment !== 'string' ||
+      !Array.isArray(result.missing_keywords) ||
+      !Array.isArray(result.interview_talking_points) ||
+      !Array.isArray(result.safety_flags)
+    ) {
+      throw new Error('Invalid data structure received from Career Agent API');
+    }
+    return result;
+  } catch (error) {
+    console.error('Error calling Career Agent API:', error);
+    if (error instanceof TypeError) {
+      throw new Error('Could not connect to the Career Agent API. Is it running on port 8000?');
+    }
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    }
+    throw new Error('An unknown error occurred while fetching the Career Agent response.');
   }
 };
 

@@ -4,12 +4,14 @@ import InputForm from './components/InputForm';
 import TranslationOutput from './components/TranslationOutput';
 import Footer from './components/Footer';
 import VetPivotLogo from './components/VetPivotLogo';
-import type { TranslationResult } from './types';
-import { getTranslationFromBackend } from './services/backendService';
+import type { CareerAgentResult } from './types';
+import { getCareerAgentFromBackend } from './services/backendService';
 
 const App: React.FC = () => {
   const [inputText, setInputText] = useState<string>('');
-  const [result, setResult] = useState<TranslationResult | null>(null);
+  const [mosBranch, setMosBranch] = useState<string>('');
+  const [targetJobDescription, setTargetJobDescription] = useState<string>('');
+  const [result, setResult] = useState<CareerAgentResult | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [inputError, setInputError] = useState<string | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
@@ -29,13 +31,18 @@ const App: React.FC = () => {
       setResult(null);
       return;
     }
+    if (!targetJobDescription.trim()) {
+      setInputError('Please paste a target job description.');
+      setResult(null);
+      return;
+    }
     setInputError(null);
     setIsLoading(true);
     setApiError(null);
     setResult(null);
 
     try {
-      const translationResult = await getTranslationFromBackend(inputText, null, 'bullet');
+      const translationResult = await getCareerAgentFromBackend(inputText, mosBranch, targetJobDescription);
       setResult(translationResult);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to get translation. Please try again.';
@@ -78,6 +85,10 @@ const App: React.FC = () => {
             <InputForm
               inputText={inputText}
               setInputText={setInputText}
+              mosBranch={mosBranch}
+              setMosBranch={setMosBranch}
+              targetJobDescription={targetJobDescription}
+              setTargetJobDescription={setTargetJobDescription}
               onTranslate={handleTranslate}
               isLoading={isLoading}
               error={inputError}

@@ -21,6 +21,10 @@ const ArrowRightIcon = () => (
 interface InputFormProps {
   inputText: string;
   setInputText: (text: string) => void;
+  mosBranch: string;
+  setMosBranch: (text: string) => void;
+  targetJobDescription: string;
+  setTargetJobDescription: (text: string) => void;
   onTranslate: () => void;
   isLoading: boolean;
   error?: string | null;
@@ -29,6 +33,10 @@ interface InputFormProps {
 const InputForm: React.FC<InputFormProps> = ({
   inputText,
   setInputText,
+  mosBranch,
+  setMosBranch,
+  targetJobDescription,
+  setTargetJobDescription,
   onTranslate,
   isLoading,
   error,
@@ -66,6 +74,32 @@ const InputForm: React.FC<InputFormProps> = ({
           <div className="absolute bottom-4 right-4 text-xs text-light-tan/30 font-mono">
             {inputText.length} chars
           </div>
+        </div>
+        <div>
+          <label htmlFor="mos-branch-input" className="text-sm font-medium text-light-tan/90">
+            MOS / branch context <span className="text-light-tan/40">(optional)</span>
+          </label>
+          <input
+            id="mos-branch-input"
+            value={mosBranch}
+            onChange={(e) => setMosBranch(e.target.value)}
+            placeholder="Example: Army communications team leader"
+            className="mt-2 w-full p-4 bg-black/20 border border-white/10 rounded-xl focus:ring-2 focus:ring-gold-500/50 focus:border-gold-500/50 outline-none transition-all duration-300 placeholder-light-tan/30 text-base shadow-inner"
+            disabled={isLoading}
+          />
+        </div>
+        <div>
+          <label htmlFor="target-job-description-input" className="text-sm font-medium text-light-tan/90">
+            Target job description
+          </label>
+          <textarea
+            id="target-job-description-input"
+            value={targetJobDescription}
+            onChange={(e) => setTargetJobDescription(e.target.value)}
+            placeholder="Paste the civilian job description you want to compare against."
+            className="mt-2 w-full min-h-[150px] p-4 bg-black/20 border border-white/10 rounded-xl focus:ring-2 focus:ring-gold-500/50 focus:border-gold-500/50 outline-none transition-all duration-300 resize-none placeholder-light-tan/30 text-base leading-relaxed shadow-inner"
+            disabled={isLoading}
+          />
         </div>
         {error && (
           <p className="text-sm text-red-300" role="alert">
