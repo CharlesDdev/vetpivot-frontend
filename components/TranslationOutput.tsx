@@ -69,30 +69,42 @@ const TranslationOutput: React.FC<TranslationOutputProps> = ({
         )}
 
         {!isLoading && !error && translations && (
-          <div className="grid grid-cols-1 gap-4">
-            <LabeledTranslationCard
-              title="Professional Resume Bullet"
-              label="Human-readable"
-              content={professionalBullet}
-              copyLabel="Copy resume bullet"
-            />
-            <LabeledTranslationCard
-              title="ATS Version"
-              label="Keyword-focused"
-              content={atsBullet}
-              copyLabel="Copy ATS version"
-            />
-            <JobFitAssessmentCard
-              assessment={translations.job_fit_assessment}
-              fit={getFitDisplay(translations.job_fit_assessment)}
-            />
-            <KeywordChipsCard keywords={translations.missing_keywords} />
-            <InterviewTalkingPointsCard points={translations.interview_talking_points} />
-            <SafetyEvaluationCard
-              evaluationNotes={translations.evaluation_notes}
-              safetyFlags={translations.safety_flags}
-              mode={translations.mode}
-            />
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="min-w-0">
+              <LabeledTranslationCard
+                title="Professional Resume Bullet"
+                label="Human-readable"
+                content={professionalBullet}
+                copyLabel="Copy resume bullet"
+              />
+            </div>
+            <div className="min-w-0">
+              <LabeledTranslationCard
+                title="ATS Version"
+                label="Keyword-focused"
+                content={atsBullet}
+                copyLabel="Copy ATS version"
+              />
+            </div>
+            <div className="min-w-0">
+              <JobFitAssessmentCard
+                assessment={translations.job_fit_assessment}
+                fit={getFitDisplay(translations.job_fit_assessment)}
+              />
+            </div>
+            <div className="min-w-0">
+              <KeywordChipsCard keywords={translations.missing_keywords} />
+            </div>
+            <div className="min-w-0 md:col-span-2">
+              <InterviewTalkingPointsCard points={translations.interview_talking_points} />
+            </div>
+            <div className="min-w-0 md:col-span-2">
+              <SafetyEvaluationCard
+                evaluationNotes={translations.evaluation_notes}
+                safetyFlags={translations.safety_flags}
+                mode={translations.mode}
+              />
+            </div>
           </div>
         )}
 
@@ -347,6 +359,7 @@ const SafetyEvaluationCard: React.FC<SafetyEvaluationCardProps> = ({
   mode,
 }) => {
   const [copied, setCopied] = React.useState(false);
+  const [isOpen, setIsOpen] = React.useState(false);
   const [isExpanded, setIsExpanded] = React.useState(false);
   const flagsText = safetyFlags.length ? safetyFlags.join('\n') : 'None identified.';
   const content = [
@@ -367,39 +380,58 @@ const SafetyEvaluationCard: React.FC<SafetyEvaluationCardProps> = ({
 
   return (
     <div className="bg-dark-charcoal/50 border border-white/10 rounded-xl shadow-lg overflow-hidden">
-      <div className="px-4 py-3 flex flex-col gap-3 bg-dark-charcoal/60 border-b border-white/10 sm:flex-row sm:items-center sm:justify-between">
-        <h3 className="text-lg font-bold text-light-tan">Safety & Evaluation Notes</h3>
-        <button
-          onClick={handleCopy}
-          className={`self-start px-3 py-1.5 text-sm rounded-md flex items-center gap-2 transition-colors duration-200 whitespace-nowrap sm:self-center ${copied ? 'bg-green-600 text-white' : 'bg-dark-olive hover:bg-opacity-80 text-light-tan/90'}`}
-          aria-label="Copy safety notes"
-          title="Copy safety notes"
-        >
-          <span>{copied ? 'Copied' : 'Copy safety notes'}</span>
-        </button>
-      </div>
-      <div className="px-4 py-4">
-        <p className="text-sm sm:text-base text-light-tan/90 whitespace-pre-wrap">{evaluationNotes}</p>
-        <div className="mt-4">
-          <p className="text-sm font-semibold text-light-tan">Safety flags:</p>
-          <p className="mt-1 text-sm sm:text-base text-light-tan/90 whitespace-pre-wrap">{flagsText}</p>
-        </div>
-        <p className="mt-4 text-sm text-light-tan/80">Mode: {mode}</p>
+      <div className="px-4 py-3 flex flex-col gap-3 bg-dark-charcoal/60 border-white/10 sm:flex-row sm:items-center sm:justify-between">
         <button
           type="button"
-          onClick={() => setIsExpanded((current) => !current)}
-          className="mt-4 text-sm font-semibold text-gold-300 underline decoration-gold-300/40 underline-offset-4 hover:text-gold-200"
-          aria-expanded={isExpanded}
+          onClick={() => setIsOpen((current) => !current)}
+          className="flex min-w-0 items-center gap-3 text-left"
+          aria-expanded={isOpen}
         >
-          Why this matters
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-gold-400/30 bg-gold-400/10 text-sm font-bold text-gold-200">
+            {isOpen ? '-' : '+'}
+          </span>
+          <span>
+            <span className="block text-lg font-bold text-light-tan">Safety & Evaluation Notes</span>
+            <span className="block text-xs text-light-tan/60">Optional review details</span>
+          </span>
         </button>
-        {isExpanded && (
-          <p className="mt-2 rounded-lg border border-white/10 bg-black/20 px-3 py-3 text-sm text-light-tan/80">
-            Safety notes help prevent unsupported claims, factual drift, and overstatement before a resume
-            bullet is used in an application or interview.
-          </p>
-        )}
+        <div className="flex items-center gap-2">
+          {isOpen && (
+            <button
+              onClick={handleCopy}
+              className={`self-start px-3 py-1.5 text-sm rounded-md flex items-center gap-2 transition-colors duration-200 whitespace-nowrap sm:self-center ${copied ? 'bg-green-600 text-white' : 'bg-dark-olive hover:bg-opacity-80 text-light-tan/90'}`}
+              aria-label="Copy safety notes"
+              title="Copy safety notes"
+            >
+              <span>{copied ? 'Copied' : 'Copy safety notes'}</span>
+            </button>
+          )}
+        </div>
       </div>
+      {isOpen && (
+        <div className="border-t border-white/10 px-4 py-4">
+          <p className="text-sm sm:text-base text-light-tan/90 whitespace-pre-wrap">{evaluationNotes}</p>
+          <div className="mt-4">
+            <p className="text-sm font-semibold text-light-tan">Safety flags:</p>
+            <p className="mt-1 text-sm sm:text-base text-light-tan/90 whitespace-pre-wrap">{flagsText}</p>
+          </div>
+          <p className="mt-4 text-sm text-light-tan/80">Mode: {mode}</p>
+          <button
+            type="button"
+            onClick={() => setIsExpanded((current) => !current)}
+            className="mt-4 text-sm font-semibold text-gold-300 underline decoration-gold-300/40 underline-offset-4 hover:text-gold-200"
+            aria-expanded={isExpanded}
+          >
+            Why this matters
+          </button>
+          {isExpanded && (
+            <p className="mt-2 rounded-lg border border-white/10 bg-black/20 px-3 py-3 text-sm text-light-tan/80">
+              Safety notes help prevent unsupported claims, factual drift, and overstatement before a resume
+              bullet is used in an application or interview.
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 };
