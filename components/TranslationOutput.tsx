@@ -87,11 +87,7 @@ const TranslationOutput: React.FC<TranslationOutputProps> = ({
               fit={getFitDisplay(translations.job_fit_assessment)}
             />
             <KeywordChipsCard keywords={translations.missing_keywords} />
-            <TranslationCard
-              title="Interview Talking Points"
-              content={listText(translations.interview_talking_points)}
-              copyLabel="Copy talking points"
-            />
+            <InterviewTalkingPointsCard points={translations.interview_talking_points} />
             <SafetyEvaluationCard
               evaluationNotes={translations.evaluation_notes}
               safetyFlags={translations.safety_flags}
@@ -197,6 +193,81 @@ const KeywordChipsCard: React.FC<KeywordChipsCardProps> = ({ keywords }) => {
                 {keyword}
               </span>
             ))}
+          </div>
+        ) : (
+          <p className="text-sm sm:text-base text-light-tan/90">None identified.</p>
+        )}
+      </div>
+    </div>
+  );
+};
+
+interface InterviewTalkingPointsCardProps {
+  points: string[];
+}
+
+const InterviewTalkingPointsCard: React.FC<InterviewTalkingPointsCardProps> = ({ points }) => {
+  const [copied, setCopied] = React.useState(false);
+  const content = points.length ? points.join('\n') : 'None identified.';
+
+  const handleCopy = React.useCallback(() => {
+    navigator.clipboard.writeText(content).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }, [content]);
+
+  const parsePoint = (point: string) => {
+    const match = point.match(/^([STAR]) - ([^:]+):\s*(.*)$/);
+    if (!match) {
+      return null;
+    }
+
+    return {
+      letter: match[1],
+      label: match[2],
+      body: match[3],
+    };
+  };
+
+  return (
+    <div className="bg-dark-charcoal/50 border border-white/10 rounded-xl shadow-lg overflow-hidden">
+      <div className="px-4 py-3 flex justify-between items-center gap-3 bg-dark-charcoal/60 border-b border-white/10">
+        <h3 className="text-lg font-bold text-light-tan">Interview Talking Points</h3>
+        <button
+          onClick={handleCopy}
+          className={`px-3 py-1.5 text-sm rounded-md flex items-center gap-2 transition-colors duration-200 whitespace-nowrap ${copied ? 'bg-green-600 text-white' : 'bg-dark-olive hover:bg-opacity-80 text-light-tan/90'}`}
+          aria-label="Copy talking points"
+          title="Copy talking points"
+        >
+          <span>{copied ? 'Copied' : 'Copy talking points'}</span>
+        </button>
+      </div>
+      <div className="px-4 py-4">
+        {points.length ? (
+          <div className="space-y-3">
+            {points.map((point) => {
+              const parsed = parsePoint(point);
+
+              if (!parsed) {
+                return (
+                  <p key={point} className="text-sm sm:text-base text-light-tan/90">
+                    {point}
+                  </p>
+                );
+              }
+
+              return (
+                <div key={point} className="flex gap-3">
+                  <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-gold-400/40 bg-gold-400/15 text-lg font-bold text-gold-200">
+                    {parsed.letter}
+                  </span>
+                  <p className="min-w-0 text-sm sm:text-base text-light-tan/90">
+                    <span className="font-bold text-light-tan">{parsed.label}:</span> {parsed.body}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         ) : (
           <p className="text-sm sm:text-base text-light-tan/90">None identified.</p>
