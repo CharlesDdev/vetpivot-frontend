@@ -20,4 +20,29 @@ export interface CareerAgentResult {
   safety_flags: string[];
   unsupported_claims: string[];
   mode: string;
+  workflow_mode?: 'targeted' | 'discovery';
+  suggested_roles?: SuggestedCivilianRole[];
+  selected_target_role?: string;
+  career_discovery_notes?: string;
+  onet_reference?: OnetReference;
+}
+
+export interface SuggestedCivilianRole {
+  title: string;
+  explanation: string;
+  onet_code?: string;
+  source?: string;
+}
+
+export interface OnetReference {
+  used?: boolean;
+  unavailable_reason?: string;
+  occupations?: Array<{
+    title: string;
+    code?: string;
+    source?: string;
+  }>;
+  tasks?: string[];
+  skills?: string[];
+  work_activities?: string[];
 }

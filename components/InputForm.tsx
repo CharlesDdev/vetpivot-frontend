@@ -23,6 +23,8 @@ interface InputFormProps {
   setInputText: (text: string) => void;
   mosBranch: string;
   setMosBranch: (text: string) => void;
+  careerGoal: 'targeted' | 'discovery';
+  setCareerGoal: (goal: 'targeted' | 'discovery') => void;
   targetJobDescription: string;
   setTargetJobDescription: (text: string) => void;
   onTranslate: () => void;
@@ -35,6 +37,8 @@ const InputForm: React.FC<InputFormProps> = ({
   setInputText,
   mosBranch,
   setMosBranch,
+  careerGoal,
+  setCareerGoal,
   targetJobDescription,
   setTargetJobDescription,
   onTranslate,
@@ -88,19 +92,60 @@ const InputForm: React.FC<InputFormProps> = ({
             disabled={isLoading}
           />
         </div>
-        <div>
-          <label htmlFor="target-job-description-input" className="text-sm font-medium text-light-tan/90">
-            Target job description
-          </label>
-          <textarea
-            id="target-job-description-input"
-            value={targetJobDescription}
-            onChange={(e) => setTargetJobDescription(e.target.value)}
-            placeholder="Paste the civilian job description you want to compare against."
-            className="mt-2 w-full min-h-[150px] p-4 bg-black/20 border border-white/10 rounded-xl focus:ring-2 focus:ring-gold-500/50 focus:border-gold-500/50 outline-none transition-all duration-300 resize-none placeholder-light-tan/30 text-base leading-relaxed shadow-inner"
-            disabled={isLoading}
-          />
-        </div>
+        <fieldset>
+          <legend className="text-sm font-medium text-light-tan/90">Career goal</legend>
+          <div className="mt-2 grid gap-3 sm:grid-cols-2">
+            <label className={`flex cursor-pointer gap-3 rounded-xl border p-4 transition-colors ${careerGoal === 'targeted' ? 'border-gold-400/50 bg-gold-400/10' : 'border-white/10 bg-black/20'}`}>
+              <input
+                type="radio"
+                name="career-goal"
+                value="targeted"
+                checked={careerGoal === 'targeted'}
+                onChange={() => setCareerGoal('targeted')}
+                disabled={isLoading}
+                className="mt-1"
+              />
+              <span>
+                <span className="block text-sm font-semibold text-light-tan">I have a target job</span>
+                <span className="mt-1 block text-sm text-light-tan/65">Compare your experience against a specific posting.</span>
+              </span>
+            </label>
+            <label className={`flex cursor-pointer gap-3 rounded-xl border p-4 transition-colors ${careerGoal === 'discovery' ? 'border-gold-400/50 bg-gold-400/10' : 'border-white/10 bg-black/20'}`}>
+              <input
+                type="radio"
+                name="career-goal"
+                value="discovery"
+                checked={careerGoal === 'discovery'}
+                onChange={() => setCareerGoal('discovery')}
+                disabled={isLoading}
+                className="mt-1"
+              />
+              <span>
+                <span className="block text-sm font-semibold text-light-tan">Help me discover civilian careers</span>
+                <span className="mt-1 block text-sm text-light-tan/65">Suggest roles from your military experience.</span>
+              </span>
+            </label>
+          </div>
+        </fieldset>
+        {careerGoal === 'targeted' ? (
+          <div>
+            <label htmlFor="target-job-description-input" className="text-sm font-medium text-light-tan/90">
+              Target job description
+            </label>
+            <textarea
+              id="target-job-description-input"
+              value={targetJobDescription}
+              onChange={(e) => setTargetJobDescription(e.target.value)}
+              placeholder="Paste the civilian job description you want to compare against."
+              className="mt-2 w-full min-h-[150px] p-4 bg-black/20 border border-white/10 rounded-xl focus:ring-2 focus:ring-gold-500/50 focus:border-gold-500/50 outline-none transition-all duration-300 resize-none placeholder-light-tan/30 text-base leading-relaxed shadow-inner"
+              disabled={isLoading}
+            />
+          </div>
+        ) : (
+          <div className="rounded-lg border border-white/10 bg-black/20 p-4 text-sm text-light-tan/70">
+            If you do not know your target job yet, VetPivot can suggest civilian roles from your military experience.
+          </div>
+        )}
         {error && (
           <p className="text-sm text-red-300" role="alert">
             {error}
@@ -127,11 +172,11 @@ const InputForm: React.FC<InputFormProps> = ({
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Translating...
+              {careerGoal === 'discovery' ? 'Discovering...' : 'Translating...'}
             </span>
           ) : (
             <>
-              <span>Translate</span>
+              <span>{careerGoal === 'discovery' ? 'Discover careers' : 'Translate'}</span>
               <ArrowRightIcon />
             </>
           )}

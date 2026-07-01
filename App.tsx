@@ -11,6 +11,7 @@ const App: React.FC = () => {
   const [inputText, setInputText] = useState<string>('');
   const [mosBranch, setMosBranch] = useState<string>('');
   const [targetJobDescription, setTargetJobDescription] = useState<string>('');
+  const [careerGoal, setCareerGoal] = useState<'targeted' | 'discovery'>('targeted');
   const [result, setResult] = useState<CareerAgentResult | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [inputError, setInputError] = useState<string | null>(null);
@@ -31,7 +32,7 @@ const App: React.FC = () => {
       setResult(null);
       return;
     }
-    if (!targetJobDescription.trim()) {
+    if (careerGoal === 'targeted' && !targetJobDescription.trim()) {
       setInputError('Please paste a target job description.');
       setResult(null);
       return;
@@ -42,7 +43,8 @@ const App: React.FC = () => {
     setResult(null);
 
     try {
-      const translationResult = await getCareerAgentFromBackend(inputText, mosBranch, targetJobDescription);
+      const activeTargetJob = careerGoal === 'targeted' ? targetJobDescription : '';
+      const translationResult = await getCareerAgentFromBackend(inputText, mosBranch, activeTargetJob);
       setResult(translationResult);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to get translation. Please try again.';
@@ -87,6 +89,8 @@ const App: React.FC = () => {
               setInputText={setInputText}
               mosBranch={mosBranch}
               setMosBranch={setMosBranch}
+              careerGoal={careerGoal}
+              setCareerGoal={setCareerGoal}
               targetJobDescription={targetJobDescription}
               setTargetJobDescription={setTargetJobDescription}
               onTranslate={handleTranslate}

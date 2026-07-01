@@ -18,7 +18,14 @@ const TranslationOutput: React.FC<TranslationOutputProps> = ({
 }) => {
   const professionalBullet = translations?.professional_resume_bullet.trim() ?? '';
   const atsBullet = translations?.ats_optimized_bullet.trim() ?? '';
-  const listText = (items: string[]) => (items.length ? items.join('\n') : 'None identified.');
+  const suggestedRoles = translations?.suggested_roles ?? [];
+  const selectedTargetRole = translations?.selected_target_role?.trim() ?? '';
+  const careerDiscoveryNotes = translations?.career_discovery_notes?.trim() ?? '';
+  const onetReference = translations?.onet_reference;
+  const hasDiscoveryResult =
+    translations?.workflow_mode === 'discovery' ||
+    suggestedRoles.length > 0 ||
+    Boolean(selectedTargetRole || careerDiscoveryNotes);
   const getFitDisplay = (assessment: string) => {
     if (/strong match/i.test(assessment)) {
       return { label: 'Strong Match', percent: 85, color: '#84cc16' };
@@ -70,6 +77,16 @@ const TranslationOutput: React.FC<TranslationOutputProps> = ({
 
         {!isLoading && !error && translations && (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {hasDiscoveryResult && (
+              <div className="min-w-0 md:col-span-2">
+                <CareerDiscoveryCard
+                  suggestedRoles={suggestedRoles}
+                  selectedTargetRole={selectedTargetRole}
+                  careerDiscoveryNotes={careerDiscoveryNotes}
+                  onetReference={onetReference}
+                />
+              </div>
+            )}
             <div className="min-w-0">
               <LabeledTranslationCard
                 title="Professional Resume Bullet"
@@ -351,6 +368,115 @@ const JobFitAssessmentCard: React.FC<JobFitAssessmentCardProps> = ({ assessment,
           </p>
           <p className="mt-2 text-sm sm:text-base text-light-tan/90 whitespace-pre-wrap">{assessment}</p>
           <p className="mt-2 text-xs text-light-tan/60">Approximate visual guide, not a hiring score.</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+interface CareerDiscoveryCardProps {
+  suggestedRoles: NonNullable<CareerAgentResult['suggested_roles']>;
+  selectedTargetRole: string;
+  careerDiscoveryNotes: string;
+  onetReference: CareerAgentResult['onet_reference'];
+}
+
+const CareerDiscoveryCard: React.FC<CareerDiscoveryCardProps> = ({
+  suggestedRoles,
+  selectedTargetRole,
+  careerDiscoveryNotes,
+  onetReference,
+}) => {
+  const [copied, setCopied] = React.useState(false);
+  const occupations = onetReference?.occupations ?? [];
+  const onetStatus = onetReference?.used
+    ? 'O*NET data used'
+    : onetReference?.unavailable_reason
+      ? `O*NET unavailable: ${onetReference.unavailable_reason}`
+      : 'O*NET data not used';
+  const content = [
+    selectedTargetRole ? `Selected target role:\n${selectedTargetRole}` : '',
+    suggestedRoles.length
+      ? `Suggested civilian roles:\n${suggestedRoles.map((role) => `${role.title}: ${role.explanation}`).join('\n')}`
+      : '',
+    careerDiscoveryNotes ? `Career discovery notes:\n${careerDiscoveryNotes}` : '',
+    `O*NET reference:\n${onetStatus}`,
+  ]
+    .filter(Boolean)
+    .join('\n\n');
+
+  const handleCopy = React.useCallback(() => {
+    navigator.clipboard.writeText(content).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }, [content]);
+
+  return (
+    <div className="bg-dark-charcoal/50 border border-white/10 rounded-xl shadow-lg overflow-hidden">
+      <div className="px-4 py-3 flex flex-col gap-3 bg-dark-charcoal/60 border-b border-white/10 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <div className="mb-1 inline-flex rounded-full border border-gold-400/25 bg-gold-400/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-gold-300">
+            Career discovery
+          </div>
+          <h3 className="text-lg font-bold text-light-tan">Suggested Civilian Roles</h3>
+        </div>
+        <button
+          onClick={handleCopy}
+          className={`self-start px-3 py-1.5 text-sm rounded-md flex items-center gap-2 transition-colors duration-200 whitespace-nowrap sm:self-center ${copied ? 'bg-green-600 text-white' : 'bg-dark-olive hover:bg-opacity-80 text-light-tan/90'}`}
+          aria-label="Copy career discovery"
+          title="Copy career discovery"
+        >
+          <span>{copied ? 'Copied' : 'Copy discovery'}</span>
+        </button>
+      </div>
+      <div className="px-4 py-4">
+        {selectedTargetRole && (
+          <div className="rounded-lg border border-gold-400/20 bg-gold-400/10 px-3 py-3">
+            <p className="text-sm font-semibold text-gold-200">Selected Target Role</p>
+            <p className="mt-1 text-sm sm:text-base text-light-tan/90">{selectedTargetRole}</p>
+          </div>
+        )}
+
+        {suggestedRoles.length > 0 && (
+          <div className="mt-4 grid gap-3">
+            {suggestedRoles.map((role) => (
+              <div key={`${role.title}-${role.onet_code ?? ''}`} className="rounded-lg border border-white/10 bg-black/15 px-3 py-3">
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="font-semibold text-light-tan">{role.title}</p>
+                  {(role.onet_code || role.source) && (
+                    <p className="text-xs uppercase tracking-wide text-light-tan/50">
+                      {[role.onet_code, role.source].filter(Boolean).join(' · ')}
+                    </p>
+                  )}
+                </div>
+                <p className="mt-2 text-sm text-light-tan/80">{role.explanation}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {careerDiscoveryNotes && (
+          <p className="mt-4 rounded-lg border border-white/10 bg-black/20 px-3 py-3 text-sm text-light-tan/80">
+            {careerDiscoveryNotes}
+          </p>
+        )}
+
+        <div className="mt-4 text-sm text-light-tan/70">
+          <p className="font-semibold text-light-tan/90">O*NET Reference</p>
+          <p className="mt-1">{onetStatus}</p>
+          {occupations.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {occupations.slice(0, 5).map((occupation) => (
+                <span
+                  key={`${occupation.title}-${occupation.code ?? ''}`}
+                  className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs text-light-tan/75"
+                >
+                  {[occupation.title, occupation.code].filter(Boolean).join(' · ')}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
