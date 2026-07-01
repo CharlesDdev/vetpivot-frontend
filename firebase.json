@@ -4,6 +4,13 @@
     "cleanUrls": true,
     "rewrites": [
       {
+        "source": "/api/career-agent",
+        "run": {
+          "serviceId": "vetpivot-career-agent",
+          "region": "us-central1"
+        }
+      },
+      {
         "source": "/api/**",
         "run": {
           "serviceId": "vetpivot-backend",

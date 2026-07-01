@@ -3,7 +3,7 @@ import type { CareerAgentResult, TranslationResult, TranslationTargetRole } from
 // For local development, the backend is expected to run on port 8080.
 // In a production environment, this should be configured to point to the deployed backend URL.
 export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
-export const CAREER_AGENT_API_BASE_URL = import.meta.env.VITE_CAREER_AGENT_API_URL || 'http://127.0.0.1:8000';
+export const CAREER_AGENT_API_BASE_URL = import.meta.env.VITE_CAREER_AGENT_API_URL || '';
 type TranslationMode = 'bullet' | 'summary';
 
 export const getTranslationFromBackend = async (
