@@ -230,15 +230,25 @@ const InterviewTalkingPointsCard: React.FC<InterviewTalkingPointsCardProps> = ({
   }, [content]);
 
   const parsePoint = (point: string) => {
-    const match = point.match(/^([STAR]) - ([^:]+):\s*(.*)$/);
-    if (!match) {
+    const mockMatch = point.match(/^([STAR]) - ([^:]+):\s*(.*)$/);
+    if (mockMatch) {
+      return {
+        letter: mockMatch[1],
+        label: mockMatch[2],
+        body: mockMatch[3],
+      };
+    }
+
+    const liveMatch = point.match(/^(Situation|Task|Action|Result):\s*(.*)$/i);
+    if (!liveMatch) {
       return null;
     }
 
+    const label = liveMatch[1][0].toUpperCase() + liveMatch[1].slice(1).toLowerCase();
     return {
-      letter: match[1],
-      label: match[2],
-      body: match[3],
+      letter: label[0],
+      label,
+      body: liveMatch[2],
     };
   };
 
@@ -270,7 +280,7 @@ const InterviewTalkingPointsCard: React.FC<InterviewTalkingPointsCardProps> = ({
               }
 
               return (
-                <div key={point} className="flex gap-3">
+                <div key={point} className="flex gap-3 rounded-lg border border-white/10 bg-black/15 px-3 py-3">
                   <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-gold-400/40 bg-gold-400/15 text-lg font-bold text-gold-200">
                     {parsed.letter}
                   </span>

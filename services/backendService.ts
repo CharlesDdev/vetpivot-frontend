@@ -85,7 +85,7 @@ export const getCareerAgentFromBackend = async (
         military_experience: militaryExperience,
         mos_branch: mosBranch,
         target_job_description: targetJobDescription,
-        mode: 'mock',
+        mode: 'auto',
       }),
     });
 
