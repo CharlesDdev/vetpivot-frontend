@@ -235,6 +235,17 @@ interface InterviewTalkingPointsCardProps {
   points: string[];
 }
 
+interface StarStep {
+  letter: string;
+  label: string;
+  body: string;
+}
+
+interface StarPoint {
+  prompt: string;
+  steps: StarStep[];
+}
+
 const InterviewTalkingPointsCard: React.FC<InterviewTalkingPointsCardProps> = ({ points }) => {
   const [copied, setCopied] = React.useState(false);
   const content = points.length ? points.join('\n') : 'None identified.';
@@ -269,6 +280,30 @@ const InterviewTalkingPointsCard: React.FC<InterviewTalkingPointsCardProps> = ({
     };
   };
 
+  const parseStarPoint = (point: string) => {
+    const cleaned = point.replace(/^STAR(?:\s+Guidance)?:\s*/i, '').trim();
+    const stepPattern = /\b(Situation|Task|Action|Result):/gi;
+    const matches = [...cleaned.matchAll(stepPattern)];
+
+    if (matches.length < 2) {
+      return null;
+    }
+
+    const prompt = cleaned.slice(0, matches[0].index).trim().replace(/[.:(\s]+$/, '');
+    const steps = matches.map((match, index) => {
+      const label = match[1][0].toUpperCase() + match[1].slice(1).toLowerCase();
+      const bodyStart = (match.index ?? 0) + match[0].length;
+      const bodyEnd = matches[index + 1]?.index ?? cleaned.length;
+      return {
+        letter: label[0],
+        label,
+        body: cleaned.slice(bodyStart, bodyEnd).trim(),
+      };
+    });
+
+    return { prompt, steps };
+  };
+
   return (
     <div className="bg-dark-charcoal/50 border border-white/10 rounded-xl shadow-lg overflow-hidden">
       <div className="px-4 py-3 flex justify-between items-center gap-3 bg-dark-charcoal/60 border-b border-white/10">
@@ -286,7 +321,14 @@ const InterviewTalkingPointsCard: React.FC<InterviewTalkingPointsCardProps> = ({
         {points.length ? (
           <div className="space-y-3">
             {points.map((point) => {
+              const starPoint = parseStarPoint(point);
               const parsed = parsePoint(point);
+
+              if (starPoint) {
+                return (
+                  <StarTalkingPointCard key={point} starPoint={starPoint} />
+                );
+              }
 
               if (!parsed) {
                 return (
@@ -313,6 +355,52 @@ const InterviewTalkingPointsCard: React.FC<InterviewTalkingPointsCardProps> = ({
         )}
       </div>
     </div>
+  );
+};
+
+const StarTalkingPointCard: React.FC<{ starPoint: StarPoint }> = ({ starPoint }) => {
+  const [isOpen, setIsOpen] = React.useState(false);
+
+  return (
+    <article className="rounded-lg border border-white/10 bg-black/15">
+      <button
+        type="button"
+        onClick={() => setIsOpen((current) => !current)}
+        className="flex w-full items-start justify-between gap-3 px-3 py-3 text-left"
+        aria-expanded={isOpen}
+      >
+        <span className="min-w-0">
+          <span className="mb-1 inline-flex rounded-full border border-gold-400/25 bg-gold-400/10 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-gold-200">
+            STAR example
+          </span>
+          <span className="block text-sm font-semibold text-light-tan sm:text-base">
+            {starPoint.prompt || 'Interview talking point'}
+          </span>
+        </span>
+        <span className={`mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-gold-400/30 bg-dark-olive text-lg font-bold leading-none text-light-tan/90 transition-transform ${isOpen ? 'rotate-45' : ''}`}>
+          +
+        </span>
+      </button>
+      {isOpen && (
+        <div className="border-t border-white/10 px-3 pb-3 pt-3">
+          <div className="grid gap-2 sm:grid-cols-2">
+            {starPoint.steps.map((step) => (
+              <div key={step.label} className="rounded-md border border-gold-400/15 bg-dark-charcoal/55 px-3 py-3">
+                <div className="mb-2 flex items-center gap-2">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-gold-400/40 bg-gold-400/15 text-sm font-bold text-gold-200">
+                    {step.letter}
+                  </span>
+                  <h4 className="text-xs font-bold uppercase tracking-wide text-gold-200">
+                    {step.label}
+                  </h4>
+                </div>
+                <p className="text-sm leading-relaxed text-light-tan/85">{step.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </article>
   );
 };
 
