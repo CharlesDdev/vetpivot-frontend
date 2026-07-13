@@ -17,8 +17,21 @@ npm run build
 ```
 
 ## 🔌 API Connection
-Environment variable:  
+Main Career Agent API:
+
+```bash
+VITE_CAREER_AGENT_API_URL=http://127.0.0.1:8000
+```
+
+Leave `VITE_CAREER_AGENT_API_URL` unset in production. Firebase Hosting rewrites same-origin `/api/career-agent` to the `vetpivot-career-agent` Cloud Run service.
+
+Legacy translation API:
+
+```bash
 VITE_API_URL=https://vetpivot-backend-796137818435.us-central1.run.app
+```
+
+The main app flow now uses `/api/career-agent`; `/api/translate` is secondary/legacy.
 
 ## 🎯 Purpose
 This frontend delivers a simple, fast UI for:

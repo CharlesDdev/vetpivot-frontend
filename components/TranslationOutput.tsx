@@ -26,6 +26,19 @@ const TranslationOutput: React.FC<TranslationOutputProps> = ({
     translations?.workflow_mode === 'discovery' ||
     suggestedRoles.length > 0 ||
     Boolean(selectedTargetRole || careerDiscoveryNotes);
+  const getModeDisplay = (mode?: string) => {
+    const normalizedMode = mode?.toLowerCase();
+
+    if (normalizedMode === 'live') {
+      return 'Live AI';
+    }
+
+    if (normalizedMode === 'mock') {
+      return 'Mock';
+    }
+
+    return 'Auto';
+  };
   const getFitDisplay = (assessment: string) => {
     if (/strong match/i.test(assessment)) {
       return { label: 'Strong Match', percent: 85, color: '#84cc16' };
@@ -43,12 +56,17 @@ const TranslationOutput: React.FC<TranslationOutputProps> = ({
   };
 
   return (
-    <section className="rounded-2xl border border-white/10 bg-white/5 p-6 sm:p-8 shadow-xl">
-      <div className="flex items-center gap-4">
+    <section className="rounded-xl border border-white/10 bg-white/5 p-5 shadow-xl sm:p-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-xs uppercase tracking-widest text-gold-400/80">Step 2</p>
-          <h2 className="text-2xl font-serif font-bold text-light-tan tracking-wide">Results</h2>
+          <h2 className="text-2xl font-bold text-light-tan">Results</h2>
         </div>
+        {translations && (
+          <span className="self-start rounded-full border border-gold-400/25 bg-gold-400/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-gold-300 sm:self-center">
+            {getModeDisplay(translations.mode)}
+          </span>
+        )}
       </div>
 
       <div className="mt-5">
@@ -159,7 +177,7 @@ const LabeledTranslationCard: React.FC<LabeledTranslationCardProps> = ({
   }, [content]);
 
   return (
-    <div className="bg-dark-charcoal/50 border border-white/10 rounded-xl shadow-lg overflow-hidden">
+    <div className="bg-dark-charcoal/50 border border-white/10 rounded-lg shadow-lg overflow-hidden">
       <div className="px-4 py-3 flex flex-col gap-3 bg-dark-charcoal/60 border-b border-white/10 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="mb-1 inline-flex rounded-full border border-gold-400/25 bg-gold-400/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-gold-300">
@@ -199,7 +217,7 @@ const KeywordChipsCard: React.FC<KeywordChipsCardProps> = ({ keywords }) => {
   }, [content]);
 
   return (
-    <div className="bg-dark-charcoal/50 border border-white/10 rounded-xl shadow-lg overflow-hidden">
+    <div className="bg-dark-charcoal/50 border border-white/10 rounded-lg shadow-lg overflow-hidden">
       <div className="px-4 py-3 flex justify-between items-center gap-3 bg-dark-charcoal/60 border-b border-white/10">
         <h3 className="text-lg font-bold text-light-tan">Missing Keywords</h3>
         <button
@@ -305,7 +323,7 @@ const InterviewTalkingPointsCard: React.FC<InterviewTalkingPointsCardProps> = ({
   };
 
   return (
-    <div className="bg-dark-charcoal/50 border border-white/10 rounded-xl shadow-lg overflow-hidden">
+    <div className="bg-dark-charcoal/50 border border-white/10 rounded-lg shadow-lg overflow-hidden">
       <div className="px-4 py-3 flex justify-between items-center gap-3 bg-dark-charcoal/60 border-b border-white/10">
         <h3 className="text-lg font-bold text-light-tan">Interview Talking Points</h3>
         <button
@@ -425,7 +443,7 @@ const JobFitAssessmentCard: React.FC<JobFitAssessmentCardProps> = ({ assessment,
   }, [assessment]);
 
   return (
-    <div className="bg-dark-charcoal/50 border border-white/10 rounded-xl shadow-lg overflow-hidden">
+    <div className="bg-dark-charcoal/50 border border-white/10 rounded-lg shadow-lg overflow-hidden">
       <div className="px-4 py-3 flex justify-between items-center gap-3 bg-dark-charcoal/60 border-b border-white/10">
         <h3 className="text-lg font-bold text-light-tan">Job Fit Assessment</h3>
         <button
@@ -437,26 +455,28 @@ const JobFitAssessmentCard: React.FC<JobFitAssessmentCardProps> = ({ assessment,
           <span>{copied ? 'Copied' : 'Copy assessment'}</span>
         </button>
       </div>
-      <div className="px-4 py-4 flex flex-col sm:flex-row sm:items-center gap-4">
-        <div
-          className="relative grid h-24 w-24 shrink-0 place-items-center rounded-full"
-          style={{ background }}
-          role="img"
-          aria-label={`${fit.label}, approximately ${fit.percent}% fit`}
-        >
-          <div className="absolute inset-2 rounded-full bg-dark-charcoal" />
-          <div className="relative text-center">
-            <p className="text-2xl font-bold text-light-tan">{fit.percent}%</p>
-            <p className="text-[10px] uppercase tracking-wide text-light-tan/60">Fit</p>
+      <div className="px-4 py-4">
+        <div className="flex items-center gap-4">
+          <div
+            className="relative grid h-24 w-24 shrink-0 place-items-center rounded-full"
+            style={{ background }}
+            role="img"
+            aria-label={`${fit.label}, approximately ${fit.percent}% fit`}
+          >
+            <div className="absolute inset-2 rounded-full bg-dark-charcoal" />
+            <div className="relative text-center">
+              <p className="text-2xl font-bold text-light-tan">{fit.percent}%</p>
+              <p className="text-[10px] uppercase tracking-wide text-light-tan/60">Fit</p>
+            </div>
+          </div>
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-wide" style={{ color: fit.color }}>
+              {fit.label}
+            </p>
+            <p className="mt-2 text-xs text-light-tan/60">Approximate visual guide, not a hiring score.</p>
           </div>
         </div>
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-wide" style={{ color: fit.color }}>
-            {fit.label}
-          </p>
-          <p className="mt-2 text-sm sm:text-base text-light-tan/90 whitespace-pre-wrap">{assessment}</p>
-          <p className="mt-2 text-xs text-light-tan/60">Approximate visual guide, not a hiring score.</p>
-        </div>
+        <p className="mt-4 text-sm sm:text-base text-light-tan/90 whitespace-pre-wrap">{assessment}</p>
       </div>
     </div>
   );
@@ -501,7 +521,7 @@ const CareerDiscoveryCard: React.FC<CareerDiscoveryCardProps> = ({
   }, [content]);
 
   return (
-    <div className="bg-dark-charcoal/50 border border-white/10 rounded-xl shadow-lg overflow-hidden">
+    <div className="bg-dark-charcoal/50 border border-white/10 rounded-lg shadow-lg overflow-hidden">
       <div className="px-4 py-3 flex flex-col gap-3 bg-dark-charcoal/60 border-b border-white/10 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="mb-1 inline-flex rounded-full border border-gold-400/25 bg-gold-400/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-gold-300">
@@ -603,7 +623,7 @@ const SafetyEvaluationCard: React.FC<SafetyEvaluationCardProps> = ({
   }, [content]);
 
   return (
-    <div className="bg-dark-charcoal/50 border border-white/10 rounded-xl shadow-lg overflow-hidden">
+    <div className="bg-dark-charcoal/50 border border-white/10 rounded-lg shadow-lg overflow-hidden">
       <div className="px-4 py-3 flex flex-col gap-3 bg-dark-charcoal/60 border-white/10 sm:flex-row sm:items-center sm:justify-between">
         <button
           type="button"

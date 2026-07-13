@@ -48,15 +48,15 @@ const InputForm: React.FC<InputFormProps> = ({
   const placeholderText = `Paste your military text here. For example: 'Led a team of 12 soldiers during deployment operations responsible for maintaining equipment worth $2.3M...'`;
 
   return (
-    <div className="bg-white/5 backdrop-blur-sm border border-white/10 p-6 sm:p-8 rounded-2xl shadow-xl relative overflow-hidden group">
+    <div className="bg-white/5 backdrop-blur-sm border border-white/10 p-5 sm:p-6 rounded-xl shadow-xl relative overflow-hidden group">
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-gold-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
 
       <p className="text-xs uppercase tracking-widest text-gold-400/80 mb-3">Step 1</p>
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-center gap-3 mb-5">
         <div className="p-2 bg-gold-500/10 rounded-lg text-gold-400">
           <EditIcon />
         </div>
-        <h2 className="text-2xl font-serif font-bold text-light-tan tracking-wide">Paste your military experience</h2>
+        <h2 className="text-2xl font-bold text-light-tan">Paste your military experience</h2>
       </div>
 
       <div className="flex flex-col gap-4">
@@ -72,7 +72,7 @@ const InputForm: React.FC<InputFormProps> = ({
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             placeholder={placeholderText}
-            className="w-full min-h-[220px] sm:min-h-[280px] p-6 bg-black/20 border border-white/10 rounded-xl focus:ring-2 focus:ring-gold-500/50 focus:border-gold-500/50 outline-none transition-all duration-300 resize-none placeholder-light-tan/30 text-lg leading-relaxed shadow-inner"
+            className="w-full min-h-[180px] sm:min-h-[220px] p-5 bg-black/20 border border-white/10 rounded-lg focus:ring-2 focus:ring-gold-500/50 focus:border-gold-500/50 outline-none transition-all duration-300 resize-none placeholder-light-tan/30 text-base leading-relaxed shadow-inner"
             disabled={isLoading}
           />
           <div className="absolute bottom-4 right-4 text-xs text-light-tan/30 font-mono">
@@ -88,14 +88,14 @@ const InputForm: React.FC<InputFormProps> = ({
             value={mosBranch}
             onChange={(e) => setMosBranch(e.target.value)}
             placeholder="Example: Army communications team leader"
-            className="mt-2 w-full p-4 bg-black/20 border border-white/10 rounded-xl focus:ring-2 focus:ring-gold-500/50 focus:border-gold-500/50 outline-none transition-all duration-300 placeholder-light-tan/30 text-base shadow-inner"
+            className="mt-2 w-full p-4 bg-black/20 border border-white/10 rounded-lg focus:ring-2 focus:ring-gold-500/50 focus:border-gold-500/50 outline-none transition-all duration-300 placeholder-light-tan/30 text-base shadow-inner"
             disabled={isLoading}
           />
         </div>
         <fieldset>
           <legend className="text-sm font-medium text-light-tan/90">Career goal</legend>
           <div className="mt-2 grid gap-3 sm:grid-cols-2">
-            <label className={`flex cursor-pointer gap-3 rounded-xl border p-4 transition-colors ${careerGoal === 'targeted' ? 'border-gold-400/50 bg-gold-400/10' : 'border-white/10 bg-black/20'}`}>
+            <label className={`flex cursor-pointer gap-3 rounded-lg border p-4 transition-colors ${careerGoal === 'targeted' ? 'border-gold-400/50 bg-gold-400/10' : 'border-white/10 bg-black/20'}`}>
               <input
                 type="radio"
                 name="career-goal"
@@ -110,7 +110,7 @@ const InputForm: React.FC<InputFormProps> = ({
                 <span className="mt-1 block text-sm text-light-tan/65">Compare your experience against a specific posting.</span>
               </span>
             </label>
-            <label className={`flex cursor-pointer gap-3 rounded-xl border p-4 transition-colors ${careerGoal === 'discovery' ? 'border-gold-400/50 bg-gold-400/10' : 'border-white/10 bg-black/20'}`}>
+            <label className={`flex cursor-pointer gap-3 rounded-lg border p-4 transition-colors ${careerGoal === 'discovery' ? 'border-gold-400/50 bg-gold-400/10' : 'border-white/10 bg-black/20'}`}>
               <input
                 type="radio"
                 name="career-goal"
@@ -137,7 +137,7 @@ const InputForm: React.FC<InputFormProps> = ({
               value={targetJobDescription}
               onChange={(e) => setTargetJobDescription(e.target.value)}
               placeholder="Paste the civilian job description you want to compare against."
-              className="mt-2 w-full min-h-[150px] p-4 bg-black/20 border border-white/10 rounded-xl focus:ring-2 focus:ring-gold-500/50 focus:border-gold-500/50 outline-none transition-all duration-300 resize-none placeholder-light-tan/30 text-base leading-relaxed shadow-inner"
+              className="mt-2 w-full min-h-[130px] p-4 bg-black/20 border border-white/10 rounded-lg focus:ring-2 focus:ring-gold-500/50 focus:border-gold-500/50 outline-none transition-all duration-300 resize-none placeholder-light-tan/30 text-base leading-relaxed shadow-inner"
               disabled={isLoading}
             />
           </div>
@@ -164,7 +164,7 @@ const InputForm: React.FC<InputFormProps> = ({
         <button
           onClick={onTranslate}
           disabled={isLoading}
-          className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-gold-600 to-gold-500 text-dark-charcoal font-bold text-lg rounded-xl hover:from-gold-500 hover:to-gold-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 ease-out transform hover:-translate-y-1 hover:shadow-lg hover:shadow-gold-500/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-dark-charcoal focus:ring-gold-500"
+          className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-gold-600 to-gold-500 text-dark-charcoal font-bold text-lg rounded-lg hover:from-gold-500 hover:to-gold-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 ease-out transform hover:-translate-y-1 hover:shadow-lg hover:shadow-gold-500/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-dark-charcoal focus:ring-gold-500"
         >
           {isLoading ? (
             <span className="flex items-center gap-2">

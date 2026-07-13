@@ -1,10 +1,37 @@
 import type { CareerAgentResult, TranslationResult, TranslationTargetRole } from '../types';
 
-// For local development, the backend is expected to run on port 8080.
-// In a production environment, this should be configured to point to the deployed backend URL.
+// Legacy translation endpoint. The main app flow uses the Career Agent API below.
 export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+// Empty in production so Firebase Hosting rewrites same-origin /api/career-agent to Cloud Run.
 export const CAREER_AGENT_API_BASE_URL = import.meta.env.VITE_CAREER_AGENT_API_URL || '';
 type TranslationMode = 'bullet' | 'summary';
+
+const normalizeCareerAgentError = (message: string, status?: number): string => {
+  const lowerMessage = message.toLowerCase();
+
+  if (
+    status === 503 ||
+    lowerMessage.includes('gemini live mode requires') ||
+    lowerMessage.includes('google_api_key') ||
+    lowerMessage.includes('gemini_api_key') ||
+    lowerMessage.includes('live mode requires')
+  ) {
+    return 'Live AI is not configured on the server.';
+  }
+
+  if (
+    status === 0 ||
+    status === 502 ||
+    status === 504 ||
+    lowerMessage.includes('failed to fetch') ||
+    lowerMessage.includes('networkerror') ||
+    lowerMessage.includes('could not connect')
+  ) {
+    return 'The career agent is unavailable right now. Try again in a minute.';
+  }
+
+  return message || 'The career agent is unavailable right now. Try again in a minute.';
+};
 
 export const getTranslationFromBackend = async (
   text: string,
@@ -94,7 +121,7 @@ export const getCareerAgentFromBackend = async (
         .json()
         .catch(() => ({ detail: 'An unknown error occurred on the Career Agent API.' }));
       const message = errorData.message || errorData.detail || `HTTP error! status: ${response.status}`;
-      throw new Error(message);
+      throw new Error(normalizeCareerAgentError(message, response.status));
     }
 
     const result: CareerAgentResult = await response.json();
@@ -112,12 +139,12 @@ export const getCareerAgentFromBackend = async (
   } catch (error) {
     console.error('Error calling Career Agent API:', error);
     if (error instanceof TypeError) {
-      throw new Error('Could not connect to the Career Agent API. Is it running on port 8000?');
+      throw new Error('The career agent is unavailable right now. Try again in a minute.');
     }
     if (error instanceof Error) {
-      throw new Error(error.message);
+      throw new Error(normalizeCareerAgentError(error.message));
     }
-    throw new Error('An unknown error occurred while fetching the Career Agent response.');
+    throw new Error('The career agent is unavailable right now. Try again in a minute.');
   }
 };
 

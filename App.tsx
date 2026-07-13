@@ -28,7 +28,7 @@ const App: React.FC = () => {
   const handleTranslate = async () => {
     setHasSubmitted(true);
     if (!inputText.trim()) {
-      setInputError('Please paste at least one bullet or achievement.');
+      setInputError('Add your military experience before translating.');
       setResult(null);
       return;
     }
@@ -65,25 +65,25 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center p-4 sm:p-6 lg:p-8 font-sans bg-slate-950">
-      <div className="w-full max-w-4xl mx-auto bg-dark-charcoal/30 backdrop-blur-md border border-white/10 rounded-3xl p-8 shadow-2xl">
+      <div className="w-full max-w-4xl mx-auto bg-dark-charcoal/30 backdrop-blur-md border border-white/10 rounded-xl p-5 shadow-2xl sm:p-6 lg:p-7">
         <Header onHomeClick={handleHomeClick} />
-        <main className="mt-6 sm:mt-8">
-          <section className="flex flex-col items-center gap-4 text-center">
-            <VetPivotLogo wrapperClassName="w-32 h-32 p-4 bg-white/5 rounded-full backdrop-blur-sm border border-white/10 shadow-inner" iconClassName="w-16" textClassName="text-xl mt-1 font-serif tracking-wider" />
+        <main className="mt-4 sm:mt-5">
+          <section className="flex flex-col items-center gap-3 text-center">
+            <VetPivotLogo wrapperClassName="w-24 h-24 p-3 bg-white/5 rounded-full backdrop-blur-sm border border-white/10 shadow-inner sm:w-28 sm:h-28" iconClassName="w-12 sm:w-14" textClassName="text-base sm:text-lg mt-1 font-serif tracking-wider" />
             <div>
               <h1 className="text-3xl sm:text-4xl font-bold text-light-tan tracking-tight font-serif">
                 Translate military experience into civilian-ready resume bullets
               </h1>
-              <p className="mt-3 text-base text-light-tan/80 max-w-2xl mx-auto leading-relaxed">
+              <p className="mt-2 text-base text-light-tan/80 max-w-2xl mx-auto leading-relaxed">
                 Paste your bullet or short experience text and get one clear translation you can copy in seconds.
               </p>
-              <p className="mt-3 text-sm text-light-tan/60">
+              <p className="mt-2 text-sm text-light-tan/60">
                 Your text is processed securely and never stored.
               </p>
             </div>
           </section>
 
-          <section className="mt-12">
+          <section className="mt-8">
             <InputForm
               inputText={inputText}
               setInputText={setInputText}
@@ -99,7 +99,7 @@ const App: React.FC = () => {
             />
           </section>
 
-          <div className="mt-12" ref={outputRef} id="outputs-section">
+          <div className="mt-8" ref={outputRef} id="outputs-section">
             <TranslationOutput
               translations={result}
               isLoading={isLoading}
